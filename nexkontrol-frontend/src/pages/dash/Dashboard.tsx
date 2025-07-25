@@ -42,7 +42,7 @@ export default function Dashboard() {
       return;
     }
     try {
-      const response = await axios.get("http://localhost:5091/api/transactions", {
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/transactions`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

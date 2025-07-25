@@ -50,7 +50,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [categories, setCategories] = useState<CategoryType[]>([]);
   const [isLoadingDropdowns, setIsLoadingDropdowns] = useState(false); // Novo estado para loading
-
+  const api = import.meta.env.VITE_API_BASE_URL;
   const { addToast } = useToast();
 
   useEffect(() => {
@@ -65,13 +65,13 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
         }
         try {
           // Busca de Categorias
-          const categoriesResponse = await axios.get("http://localhost:5091/api/Category", { // VERIFIQUE A PORTA DO SEU BACKEND AQUI
+          const categoriesResponse = await axios.get(`${api}/Category`, { // VERIFIQUE A PORTA DO SEU BACKEND AQUI
             headers: { Authorization: `Bearer ${token}` }
           });
           setCategories(categoriesResponse.data);
 
           // Busca de Contas Financeiras
-          const accountsResponse = await axios.get("http://localhost:5091/api/account", { // VERIFIQUE A PORTA DO SEU BACKEND AQUI
+          const accountsResponse = await axios.get(`${api}/account`, { // VERIFIQUE A PORTA DO SEU BACKEND AQUI
             headers: { Authorization: `Bearer ${token}` }
           });
           setAccounts(accountsResponse.data);
@@ -111,7 +111,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
     };
 
     try {
-      await axios.post("http://localhost:5091/api/transactions", data, {
+      await axios.post(`${api}/transactions`, data, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
