@@ -19,19 +19,18 @@ interface Transaction {
   id: string;
   date: string;
   description: string;
-  category: {
-    id: string; // Adicionado ID para a categoria
-    name: string;
-  } | null; // Categoria pode ser um objeto ou null
+  categoryName:string; // Categoria pode ser um objeto ou null
   type: 0 | 1; // 0 para Entrada, 1 para Saída
   amount: number;
+  status:0 | 1;
+  isRecurring: boolean;
+  notes:string;
 }
 
 export default function Dashboard() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [totals, setTotals] = useState({ income: 0, expense: 0, balance: 0 });
   const [isModalOpen, setIsModalOpen] = useState(false); // Estado para controlar o modal
-
   const fetchTransactions = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -101,6 +100,7 @@ export default function Dashboard() {
               <NewTransactionForm
                 onSuccess={handleTransactionSuccess}
                 onClose={() => setIsModalOpen(false)}
+                isOpen={isModalOpen}
               />
             </DialogContent>
           </Dialog>

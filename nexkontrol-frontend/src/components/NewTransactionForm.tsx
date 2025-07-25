@@ -1,13 +1,15 @@
 // src/components/NewTransactionForm.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios"; // Usaremos axios diretamente
 import { Button } from "../components/ui/button"; // Importe seu componente Button
 import { TrendingDown, TrendingUp } from "lucide-react"; // Ícones para Entrada/Saída
 import { DialogClose } from "../components/ui/dialog"; // Para o botão de fechar
+import type { AccountType, Account } from "../types/Account";
 
 interface Props {
   onSuccess: () => void;
   onClose: () => void; // Adicionado para fechar o modal programaticamente
+  isOpen: boolean;
 }
 
 // Interface para os dados que o formulário enviará
@@ -24,7 +26,13 @@ interface TransactionFormData {
   recurrenceInterval?: number; // Opcional, se for usar - ajuste conforme seu enum RecurrenceInterval
 }
 
-export default function NewTransactionForm({ onSuccess, onClose }: Props) {
+interface CategoryType{
+  id:string;
+  userId: string;
+  categoryName:string;
+}
+
+export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props) {
   const [amount, setAmount] = useState("");
   const [type, setType] = useState<0 | 1>(1);
   const [description, setDescription] = useState("");
@@ -36,6 +44,47 @@ export default function NewTransactionForm({ onSuccess, onClose }: Props) {
   const [isRecurring, setIsRecurring] = useState(false);
   const [notes, setNotes] = useState("");
   const [recurrenceInterval, setRecurrenceInterval] = useState<number | undefined>(undefined); // Se for usar recorrência
+
+  // Estados para as listas de contas e categorias (populadas do backend)
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [categories, setCategories] = useState<CategoryType[]>([]);
+  const [isLoadingDropdowns, setIsLoadingDropdowns] = useState(false); // Novo estado para loading
+
+  // useEffect para carregar contas e categorias SOMENTE QUANDO O MODAL ABRE
+  useEffect(() => {
+    if (isOpen && categories.length === 0) { // Só busca se o modal abriu e as listas estão vazias
+      const fetchDropdownData = async () => {
+        setIsLoadingDropdowns(true); // Inicia o loading
+        const token = localStorage.getItem("token");
+        if (!token) {
+          setIsLoadingDropdowns(false);
+          return;
+        }
+        try {
+          // Busca de Categorias
+          const categoriesResponse = await axios.get("http://localhost:5091/api/Category", { // VERIFIQUE A PORTA DO SEU BACKEND AQUI
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setCategories(categoriesResponse.data);
+
+          // Busca de Contas Financeiras
+          const accountsResponse = await axios.get("http://localhost:5091/api/account", { // VERIFIQUE A PORTA DO SEU BACKEND AQUI
+            headers: { Authorization: `Bearer ${token}` }
+          });
+           debugger
+
+          setAccounts(accountsResponse.data);
+
+        } catch (error) {
+          console.error("Erro ao carregar dados de dropdown:", error);
+          // Trate o erro, talvez mostrando uma mensagem ao usuário
+        } finally {
+          setIsLoadingDropdowns(false); // Finaliza o loading
+        }
+      };
+      fetchDropdownData();
+    }
+  }, [isOpen, categories.length]); // Dependências: isOpen, e o tamanho das listas para evitar re-fetch desnecessário
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -138,12 +187,12 @@ export default function NewTransactionForm({ onSuccess, onClose }: Props) {
           onChange={(e) => setCategoryId(e.target.value)}
           className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white"
           required
+          disabled={isLoadingDropdowns} // Desabilita enquanto carrega
         >
-          <option value="">Selecione a Categoria</option>
-          <option value="1">Alimentação</option>
-          <option value="2">Transporte</option>
-          <option value="3">Moradia</option>
-          <option value="4">Lazer</option>
+          <option value="">{isLoadingDropdowns ? "Carregando Categorias..." : "Selecione a Categoria"}</option>
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>{cat.categoryName}</option>
+          ))}
         </select>
       </div>
 
@@ -155,11 +204,12 @@ export default function NewTransactionForm({ onSuccess, onClose }: Props) {
           onChange={(e) => setAccountId(e.target.value)}
           className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white"
           required
+          disabled={isLoadingDropdowns}
         >
-          <option value="">Selecione a Conta</option>
-          <option value="1">Nubank</option>
-          <option value="2">Carteira</option>
-          <option value="3">Banco X</option>
+         <option value="">{isLoadingDropdowns? "Carregando Contas...":"Selecione a conta"}</option>
+         {accounts.map((acc)=>(
+          <option key={acc.id} value={acc.id}>{acc.name}</option>
+         ))}
         </select>
       </div>
 

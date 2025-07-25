@@ -5,13 +5,14 @@ import React from "react";
 
 interface Transaction {
   id: string;
-  amount: number;
   date: string;
   description: string;
-  type: 0 | 1;
-  category: {
-    name: string;
-  } | null;
+  categoryName:string; // Categoria pode ser um objeto ou null
+  type: 0 | 1; // 0 para Entrada, 1 para Saída
+  amount: number;
+  status:0 | 1;
+  isRecurring: boolean;
+  notes:string;
 }
 
 interface Props {
@@ -42,7 +43,7 @@ export default function TransactionsTable({ transactions }: Props) {
                   {new Date(t.date).toLocaleDateString("pt-BR")}
                 </td>
                 <td className="py-3 px-2">{t.description}</td>
-                <td className="py-3 px-2">{t.category?.name ?? "-"}</td>
+                <td className="py-3 px-2">{t.categoryName ?? "-"}</td>
                 <td className={cn(
                   "py-3 px-2 text-right font-medium",
                   t.type === 0 ? "text-green-600" : "text-red-600"
