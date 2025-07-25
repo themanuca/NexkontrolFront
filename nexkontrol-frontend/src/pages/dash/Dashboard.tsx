@@ -1,10 +1,9 @@
 // src/pages/Dashboard.tsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { PlusCircle, TrendingDown, TrendingUp, Wallet } from "lucide-react";
+import { LogOut, PlusCircle, TrendingDown, TrendingUp, Wallet } from "lucide-react";
 
 // Importações dos seus componentes de UI e utilitários
-import { formatCurrency } from "../../lib/utils";
 import { Button } from "../../components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "../../components/ui/dialog";
 
@@ -12,7 +11,8 @@ import { Dialog, DialogContent, DialogTrigger } from "../../components/ui/dialog
 import SummaryCard from "../../components/SummaryCard"; // Componente para os cards de resumo
 import TransactionsTable from "../../components/TransactionsTable"; // Componente para a tabela de transações
 import NewTransactionForm from "../../components/NewTransactionForm"; // Componente do formulário de nova transação
-import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "../../Context/ToastContext";
 
 // Interface unificada para Transação (0 = Entrada, 1 = Saída)
 interface Transaction {
@@ -31,10 +31,13 @@ export default function Dashboard() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [totals, setTotals] = useState({ income: 0, expense: 0, balance: 0 });
   const [isModalOpen, setIsModalOpen] = useState(false); // Estado para controlar o modal
+  const navigate = useNavigate();
+  const { addToast } = useToast(); // <--- Use o hook useToast
+
   const fetchTransactions = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
-      console.error("Token de autenticação não encontrado.");
+      addToast("Token de autenticação não encontrado.","error");
       // Redirecionar para a página de login ou exibir uma mensagem
       return;
     }
@@ -65,13 +68,14 @@ export default function Dashboard() {
       setTotals({ income, expense, balance: income - expense });
 
     } catch (error) {
-      console.error("Erro ao buscar transações:", error);
-      <Navigate to="/login" replace />;
-      localStorage.removeItem("token");
-      // TODO: Melhor tratamento de erro (ex: token expirado, erro de rede)
+      addToast("Erro ao buscar transações:", "error");
+      handlerLogout();
     }
   };
-
+  const handlerLogout = ()=>{
+    navigate("/login");
+    localStorage.removeItem("token");
+  }
   useEffect(() => {
     fetchTransactions();
   }, []);
@@ -84,8 +88,11 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6 md:p-10 font-sans">
+      <button onClick={handlerLogout} className="flex shadow-md transition-all duration-200 ease-in-out bg-gradient-to-r">
+        <LogOut className="w-5 h-5"/>
+      </button>
       <div className="max-w-6xl mx-auto">
-        <header className="flex justify-between items-center mb-10">
+        <header className="md:flex md:justify-between items-center mb-10">
           <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-50">
             Painel de Controle
           </h1>

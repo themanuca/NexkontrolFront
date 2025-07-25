@@ -6,10 +6,12 @@ import Register from './pages/register/register';
 import PrivateRoute from './components/privateRouters/PrivateRoute';
 import Dashboard from './pages/dash/Dashboard';
 import HomePage from './pages/HomePage/HomePage';
+import { ToastProvider } from './Context/ToastContext';
 
 function App() {
   return(
   <BrowserRouter>
+    <ToastProvider>
       <Routes>
         <Route path='/' element={<HomePage/>}/>
         <Route path="/login" element={<Login />} />
@@ -19,6 +21,7 @@ function App() {
             <Dashboard/>
           </PrivateRoute>} />
       </Routes>
+    </ToastProvider>
     </BrowserRouter>
   )
 }

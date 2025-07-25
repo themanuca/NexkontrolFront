@@ -4,12 +4,14 @@
 import { useState } from "react";
 import { login } from "../../api/auth"; // Importa a função de login (verifique o caminho)
 import { Link, useNavigate } from "react-router-dom"; // Importa Link e useNavigate do React Router
+import { useToast } from "../../Context/ToastContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(""); // Estado para exibir mensagens de erro
   const navigate = useNavigate(); // Hook para navegação programática
+  const { addToast } = useToast(); // <--- Use o hook useToast
 
   // Função para lidar com o envio do formulário de login
   const handleSubmit = async (e: React.FormEvent) => {
@@ -18,9 +20,12 @@ export default function Login() {
     try {
       const res = await login(email, password); // Chama a API de login
       localStorage.setItem("token", res.token); // Armazena o token JWT no localStorage
+
+      addToast("Login relizado com sucesso.","success");
       navigate("/dashboard"); // Redireciona para o dashboard após o login bem-sucedido
-    } catch (err) {
-      setError("Credenciais inválidas."); // Define a mensagem de erro em caso de falha
+    } catch (err:any) {
+      var res:string = err.response.data.error
+      addToast(res,"error"); // Define a mensagem de erro em caso de falha
     }
   };
 

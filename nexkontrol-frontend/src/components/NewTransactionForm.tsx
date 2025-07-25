@@ -4,7 +4,8 @@ import axios from "axios"; // Usaremos axios diretamente
 import { Button } from "../components/ui/button"; // Importe seu componente Button
 import { TrendingDown, TrendingUp } from "lucide-react"; // Ícones para Entrada/Saída
 import { DialogClose } from "../components/ui/dialog"; // Para o botão de fechar
-import type { AccountType, Account } from "../types/Account";
+import type { Account } from "../types/Account";
+import { useToast } from "../Context/ToastContext";
 
 interface Props {
   onSuccess: () => void;
@@ -50,7 +51,8 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
   const [categories, setCategories] = useState<CategoryType[]>([]);
   const [isLoadingDropdowns, setIsLoadingDropdowns] = useState(false); // Novo estado para loading
 
-  // useEffect para carregar contas e categorias SOMENTE QUANDO O MODAL ABRE
+  const { addToast } = useToast();
+
   useEffect(() => {
     if (isOpen && categories.length === 0) { // Só busca se o modal abriu e as listas estão vazias
       const fetchDropdownData = async () => {
@@ -58,6 +60,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
         const token = localStorage.getItem("token");
         if (!token) {
           setIsLoadingDropdowns(false);
+          addToast("Sua seção expirou.","error")
           return;
         }
         try {
@@ -71,20 +74,17 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
           const accountsResponse = await axios.get("http://localhost:5091/api/account", { // VERIFIQUE A PORTA DO SEU BACKEND AQUI
             headers: { Authorization: `Bearer ${token}` }
           });
-           debugger
-
           setAccounts(accountsResponse.data);
 
         } catch (error) {
-          console.error("Erro ao carregar dados de dropdown:", error);
-          // Trate o erro, talvez mostrando uma mensagem ao usuário
+          addToast("Erro ao carregar dados de dropdown:", "error");
         } finally {
           setIsLoadingDropdowns(false); // Finaliza o loading
         }
       };
       fetchDropdownData();
     }
-  }, [isOpen, categories.length]); // Dependências: isOpen, e o tamanho das listas para evitar re-fetch desnecessário
+  }, [isOpen, categories.length, accounts.length]); // Dependências: isOpen, e o tamanho das listas para evitar re-fetch desnecessário
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -92,7 +92,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
 
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("Erro de autenticação: token não encontrado.");
+      addToast("Erro de autenticação: token não encontrado.","error");
       setIsSubmitting(false);
       return;
     }
@@ -118,10 +118,10 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
         }
       });
       onSuccess();
+      addToast("Registro feito com sucesso.","success")
       onClose();
     } catch (error) {
-      console.error("Erro ao cadastrar transação:", error);
-      alert("Erro ao cadastrar transação. Verifique o console.");
+      addToast("Erro ao cadastrar transação:", "error");
     } finally {
       setIsSubmitting(false);
     }
