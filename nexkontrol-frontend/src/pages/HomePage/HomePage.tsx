@@ -2,7 +2,6 @@
 // Este componente representa a página inicial pública do NexKontrol.
 // Ele serve como uma landing page para usuários não autenticados, convidando-os ao login.
 
-import React from 'react';
 import { Link } from 'react-router-dom'; // Para navegar para a página de login
 import { Button } from '../../components/ui/button'; // Reutiliza seu componente de botão
 import { LogIn } from 'lucide-react'; // Ícone para o botão de login

@@ -43,7 +43,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<0 | 1>(0); // Ex: 0 = Pendente. Ajuste o valor inicial conforme seu enum
   const [isRecurring, setIsRecurring] = useState(false);
-  const [notes, setNotes] = useState("");
+  const [notes] = useState("");
   const [recurrenceInterval, setRecurrenceInterval] = useState<number | undefined>(undefined); // Se for usar recorrência
 
   // Estados para as listas de contas e categorias (populadas do backend)

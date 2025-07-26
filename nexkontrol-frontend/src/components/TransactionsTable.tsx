@@ -1,7 +1,6 @@
 // src/components/TransactionsTable.tsx
 import { Card } from "../components/ui/card";
 import { cn, formatCurrency } from "../lib/utils";
-import React from "react";
 
 interface Transaction {
   id: string;

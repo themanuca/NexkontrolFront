@@ -9,7 +9,7 @@ import { useToast } from "../../Context/ToastContext";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(""); // Estado para exibir mensagens de erro
+  const [error] = useState(""); // Estado para exibir mensagens de erro
   const navigate = useNavigate(); // Hook para navegação programática
   const { addToast } = useToast(); // <--- Use o hook useToast
 

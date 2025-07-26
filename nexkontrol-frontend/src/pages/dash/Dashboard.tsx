@@ -1,5 +1,5 @@
 // src/pages/Dashboard.tsx
-import React, { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 import axios from "axios";
 import { LogOut, PlusCircle, TrendingDown, TrendingUp, Wallet } from "lucide-react";
 
