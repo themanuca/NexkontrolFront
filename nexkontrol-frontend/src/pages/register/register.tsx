@@ -1,23 +1,30 @@
 import { useState } from "react";
 import { register } from "../../api/auth";
 import { useNavigate, Link } from "react-router-dom";
+import { useToast } from "../../Context/ToastContext";
 
 export default function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { addToast } = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
 
+    addToast("Carregando...", "info");
     try {
       const res = await register(name, email, password);
       localStorage.setItem("token", res.token);
       navigate("/dashboard");
     } catch (err) {
-      setError("Erro ao registrar. Tente novamente.");
+      addToast("Erro ao registrar. Tente novamente.","error");
+    }finally{
+      setIsLoading(false);
     }
   };
 
@@ -61,6 +68,7 @@ export default function Register() {
         <button
           type="submit"
           className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+          disabled={isLoading}
         >
           Cadastrar
         </button>

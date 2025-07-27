@@ -5,27 +5,32 @@ import { useState } from "react";
 import { login } from "../../api/auth"; // Importa a função de login (verifique o caminho)
 import { Link, useNavigate } from "react-router-dom"; // Importa Link e useNavigate do React Router
 import { useToast } from "../../Context/ToastContext";
+import { Loader2 } from "lucide-react";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error] = useState(""); // Estado para exibir mensagens de erro
   const navigate = useNavigate(); // Hook para navegação programática
-  const { addToast } = useToast(); // <--- Use o hook useToast
+  const { addToast, updateToast } = useToast(); // <--- Use o hook useToast
+  const [isLoading, setIsLoading] = useState(false);
 
   // Função para lidar com o envio do formulário de login
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); // Previne o comportamento padrão de recarregar a página
-
+    e.preventDefault();
+    setIsLoading(true);
+    const loadingToastId = addToast("Autenticando...", "loading", 0);
     try {
-      const res = await login(email, password); // Chama a API de login
-      localStorage.setItem("token", res.token); // Armazena o token JWT no localStorage
+      const res = await login(email, password); 
+      localStorage.setItem("token", res.token);
 
-      addToast("Login relizado com sucesso.","success");
-      navigate("/dashboard"); // Redireciona para o dashboard após o login bem-sucedido
+      updateToast(loadingToastId,"Login relizado com sucesso.","success");
+      navigate("/dashboard");
     } catch (err:any) {
       var res:string = err.response.data.error
-      addToast(res,"error"); // Define a mensagem de erro em caso de falha
+      addToast(res,"error");
+    }finally{
+      setIsLoading(false);
     }
   };
 
@@ -74,8 +79,10 @@ export default function Login() {
           // Estilos do botão: largura total, fundo azul, texto branco, padding, arredondado
           // Efeito hover
           className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200"
+          disabled={isLoading}
         >
-          Entrar
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} {/* Ícone de spinner */}
+          {isLoading ? "Entrando..." : "Entrar"} {/* Texto do botão muda */}
         </button>
 
         {/* Link para Fazer Cadastro */}
