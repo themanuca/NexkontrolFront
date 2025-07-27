@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = "http://localhost:5091/api"; // ajuste se necessário
+const API = import.meta.env.VITE_API_BASE_URL; // ajuste se necessário
 
 export async function getTransactions() {
   const token = localStorage.getItem("token");
