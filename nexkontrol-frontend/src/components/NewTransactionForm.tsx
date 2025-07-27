@@ -31,6 +31,7 @@ interface CategoryType{
   id:string;
   userId: string;
   categoryName:string;
+  totalspent:number;
 }
 
 export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props) {
@@ -52,7 +53,8 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
   const [isLoadingDropdowns, setIsLoadingDropdowns] = useState(false); // Novo estado para loading
   const api = import.meta.env.VITE_API_BASE_URL;
   const { addToast } = useToast();
-
+  const [valorCategoria, setValorCategoria]=useState("");
+  const [isNewCategoruy, setIsNewCategoruy] = useState(false);
   useEffect(() => {
     if (isOpen && categories.length === 0) { // Só busca se o modal abriu e as listas estão vazias
       const fetchDropdownData = async () => {
@@ -86,6 +88,28 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
     }
   }, [isOpen, categories.length, accounts.length]); // Dependências: isOpen, e o tamanho das listas para evitar re-fetch desnecessário
 
+  function handlerNewCategory(){
+    setIsNewCategoruy(true);
+  }
+  async function ValidCreateCategory() {
+    debugger
+    const token = localStorage.getItem("token");
+    if(valorCategoria.length > 0){
+      try{
+
+       var result= await axios.post(`${api}/Category`,{categoryName:valorCategoria},{
+        headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+        }})
+        setCategoryId(result.data)
+      }catch(error){
+        addToast("Erro ao cadastrar categoria:", "error");
+        setIsSubmitting(false);
+        return
+      }
+    }
+  }
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setIsSubmitting(true);
@@ -96,7 +120,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
       setIsSubmitting(false);
       return;
     }
-
+    await ValidCreateCategory();
     const data: TransactionFormData = {
       amount: parseFloat(amount),
       type,
@@ -181,7 +205,13 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
 
       <div>
         <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
-        <select
+        <button onClick={handlerNewCategory} style={{ background: 'none', border: 'none', color: 'blue', cursor: 'pointer' }}>
+          Adicionar Categoria
+        </button>  
+
+
+        { isNewCategoruy === false ? (
+          <select
           id="categoryId"
           value={categoryId}
           onChange={(e) => setCategoryId(e.target.value)}
@@ -189,11 +219,15 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
           required
           disabled={isLoadingDropdowns} // Desabilita enquanto carrega
         >
-          <option value="">{isLoadingDropdowns ? "Carregando Categorias..." : "Selecione a Categoria"}</option>
-          {categories.map((cat) => (
-            <option key={cat.id} value={cat.id}>{cat.categoryName}</option>
-          ))}
+            <option value="">{isLoadingDropdowns ? "Carregando Categorias..." : "Selecione a Categoria"}</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>{cat.categoryName}</option>
+            ))}
         </select>
+        ):(
+          <input type="text" value={valorCategoria} onChange={e => setValorCategoria(e.target.value)} 
+          className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white"/>
+        )}
       </div>
 
       <div>
@@ -203,7 +237,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
           value={accountId}
           onChange={(e) => setAccountId(e.target.value)}
           className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white"
-          required
+          // required
           disabled={isLoadingDropdowns}
         >
          <option value="">{isLoadingDropdowns? "Carregando Contas...":"Selecione a conta"}</option>
