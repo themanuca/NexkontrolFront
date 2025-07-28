@@ -92,7 +92,6 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
     setIsNewCategoruy(true);
   }
   async function ValidCreateCategory() {
-    debugger
     const token = localStorage.getItem("token");
     if(valorCategoria.length > 0){
       try{
@@ -205,10 +204,9 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
 
       <div>
         <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
-        <button onClick={handlerNewCategory} style={{ background: 'none', border: 'none', color: 'blue', cursor: 'pointer' }}>
+        <button type="button" onClick={handlerNewCategory} style={{ background: 'none', border: 'none', color: 'blue', cursor: 'pointer' }}>
           Adicionar Categoria
         </button>  
-
 
         { isNewCategoruy === false ? (
           <select
@@ -232,6 +230,10 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
 
       <div>
         <label htmlFor="accountId" className="block text-sm font-medium text-gray-700 mb-1">Conta</label>
+          <button type="button" style={{ background: 'none', border: 'none', color: 'blue', cursor: 'pointer' }}>
+            Adicionar Conta
+          </button>  
+
         <select
           id="accountId"
           value={accountId}

@@ -13,7 +13,6 @@ import TransactionsTable from "../../components/TransactionsTable"; // Component
 import NewTransactionForm from "../../components/NewTransactionForm"; // Componente do formulário de nova transação
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../Context/ToastContext";
-
 // Interface unificada para Transação (0 = Entrada, 1 = Saída)
 interface Transaction {
   id: string;
@@ -33,9 +32,12 @@ export default function Dashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false); // Estado para controlar o modal
   const navigate = useNavigate();
   const { addToast } = useToast(); // <--- Use o hook useToast
+  const [userName, isUserName]=useState<string|null>();
 
   const fetchTransactions = async () => {
+    debugger
     const token = localStorage.getItem("token");
+    isUserName(localStorage.getItem("userName"))
     if (!token) {
       addToast("Token de autenticação não encontrado.","error");
       // Redirecionar para a página de login ou exibir uma mensagem
@@ -87,10 +89,16 @@ export default function Dashboard() {
   };
 
   return (
+    <div>
+      <div className="shadow-md min-w-screen text-lg flex bg-gray-100 justify-between items-center dark:bg-gray-400 p-6 ease-in-out bg-gradient-to-r ">
+        <h2>
+          Olá {userName} !
+        </h2>
+        <button onClick={handlerLogout} className="flex shadow-md transition-all duration-200 ease-in-out bg-gradient-to-r">
+          <LogOut className="w-5 h-5"/>
+        </button>
+      </div>    
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6 md:p-10 font-sans">
-      <button onClick={handlerLogout} className="flex shadow-md transition-all duration-200 ease-in-out bg-gradient-to-r">
-        <LogOut className="w-5 h-5"/>
-      </button>
       <div className="max-w-6xl mx-auto">
         <header className="md:flex md:justify-between items-center mb-10">
           <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-50">
@@ -148,5 +156,6 @@ export default function Dashboard() {
         </section>
       </div>
     </div>
+  </div>
   );
 }

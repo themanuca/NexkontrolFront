@@ -12,19 +12,21 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error] = useState(""); // Estado para exibir mensagens de erro
   const navigate = useNavigate(); // Hook para navegação programática
-  const { addToast, updateToast } = useToast(); // <--- Use o hook useToast
+  const { addToast } = useToast(); // <--- Use o hook useToast
   const [isLoading, setIsLoading] = useState(false);
 
   // Função para lidar com o envio do formulário de login
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    const loadingToastId = addToast("Autenticando...", "loading", 0);
+    addToast("Autenticando...", "loading", 0);
     try {
-      const res = await login(email, password); 
+      const res = await login(email, password);
+      debugger
       localStorage.setItem("token", res.token);
+      localStorage.setItem("userName", res.name)
 
-      updateToast(loadingToastId,"Login relizado com sucesso.","success");
+      addToast("Login relizado com sucesso.","success");
       navigate("/dashboard");
     } catch (err:any) {
       var res:string = err.response.data.error
