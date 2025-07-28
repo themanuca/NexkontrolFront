@@ -55,6 +55,10 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
   const { addToast } = useToast();
   const [valorCategoria, setValorCategoria]=useState("");
   const [isNewCategoruy, setIsNewCategoruy] = useState(false);
+
+  const [valueAccount, setIsValueAccount]=useState("");
+  const [isNewAccount, setIsNewAccount] = useState(false);
+  const [isNewAccountType, setIsNewAccountType]=useState<number>(0);
   useEffect(() => {
     if (isOpen && categories.length === 0) { // Só busca se o modal abriu e as listas estão vazias
       const fetchDropdownData = async () => {
@@ -90,6 +94,9 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
 
   function handlerNewCategory(){
     setIsNewCategoruy(true);
+  }
+  async function ValidCreateAccount(){
+    setIsNewAccount(true);
   }
   async function ValidCreateCategory() {
     const token = localStorage.getItem("token");
@@ -230,23 +237,46 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
 
       <div>
         <label htmlFor="accountId" className="block text-sm font-medium text-gray-700 mb-1">Conta</label>
-          <button type="button" style={{ background: 'none', border: 'none', color: 'blue', cursor: 'pointer' }}>
+          <button type="button" disabled={isNewAccount} onClick={ValidCreateAccount} style={{ background: 'none', border: 'none', color: 'blue', cursor: 'pointer' }}>
             Adicionar Conta
           </button>  
-
-        <select
-          id="accountId"
-          value={accountId}
-          onChange={(e) => setAccountId(e.target.value)}
-          className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white"
-          // required
-          disabled={isLoadingDropdowns}
-        >
-         <option value="">{isLoadingDropdowns? "Carregando Contas...":"Selecione a conta"}</option>
-         {accounts.map((acc)=>(
-          <option key={acc.id} value={acc.id}>{acc.name}</option>
-         ))}
-        </select>
+        {isNewAccount === false ?(
+          <select
+            id="accountId"
+            value={accountId}
+            onChange={(e) => setAccountId(e.target.value)}
+            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white"
+            // required
+            disabled={isLoadingDropdowns}
+          >
+            <option value="">{isLoadingDropdowns? "Carregando Contas...":"Selecione a conta"}</option>
+            {accounts.map((acc)=>(
+              <option key={acc.id} value={acc.id}>{acc.name}</option>
+            ))}
+          </select>
+          ):(
+            <div>
+              <input type="text" placeholder="Nome da Conta" value={valueAccount} onChange={e => setIsValueAccount(e.target.value)} 
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white"/>
+            
+              <select
+                id="accountType"
+                value={isNewAccountType} // Usar '' para opção vazia
+                onChange={(e) => setIsNewAccountType(parseInt(e.target.value))}
+                className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white"
+                required={valueAccount.length > 0}
+                >
+                <option value="">Selecione o tipo:</option>
+                <option value="0">Banco</option>
+                <option value="1">Cartão de crédito</option>
+                <option value="2">Pix</option>
+                {/* Adicione outras opções conforme seu enum RecurrenceInterval */}
+              </select>
+            </div>
+            
+          )
+        }
+        
       </div>
 
       <div>

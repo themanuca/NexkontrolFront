@@ -12,17 +12,16 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error] = useState(""); // Estado para exibir mensagens de erro
   const navigate = useNavigate(); // Hook para navegação programática
-  const { addToast } = useToast(); // <--- Use o hook useToast
+  const { addToast, removeToast } = useToast(); // <--- Use o hook useToast
   const [isLoading, setIsLoading] = useState(false);
 
   // Função para lidar com o envio do formulário de login
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    addToast("Autenticando...", "loading", 0);
+    var autenticao = addToast("Autenticando...", "loading",1);
     try {
       const res = await login(email, password);
-      debugger
       localStorage.setItem("token", res.token);
       localStorage.setItem("userName", res.name)
 
@@ -33,16 +32,14 @@ export default function Login() {
       addToast(res,"error");
     }finally{
       setIsLoading(false);
+      removeToast(autenticao)
     }
   };
 
   return (
-    // Contêiner principal da página de login, com fundo responsivo ao tema
     <div className="min-h-screen flex items-center justify-center bg-gray-300 dark:bg-gray-900">
-      {/* Formulário de login */}
       <form
         onSubmit={handleSubmit}
-        // Estilos do formulário: fundo, padding, bordas arredondadas, sombra e largura
         className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg w-80" // Ajustado para rounded-xl e shadow-lg
       >
         {/* Título do formulário */}
@@ -55,8 +52,6 @@ export default function Login() {
         <input
           type="email"
           placeholder="Email"
-          // Estilos do input: largura total, margem inferior, padding, borda, arredondado
-          // Cores do texto e placeholder ajustadas para dark mode
           className="w-full mb-4 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -67,28 +62,22 @@ export default function Login() {
         <input
           type="password"
           placeholder="Senha"
-          // Estilos do input: largura total, margem inferior, padding, borda, arredondado
-          // Cores do texto e placeholder ajustadas para dark mode
           className="w-full mb-4 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
         />
 
-        {/* Botão de Entrar */}
         <button
           type="submit"
-          // Estilos do botão: largura total, fundo azul, texto branco, padding, arredondado
-          // Efeito hover
           className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200"
           disabled={isLoading}
         >
-          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} {/* Ícone de spinner */}
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isLoading ? "Entrando..." : "Entrar"} {/* Texto do botão muda */}
         </button>
 
-        {/* Link para Fazer Cadastro */}
-        <p className="text-sm text-center mt-4 text-gray-600 dark:text-gray-300"> {/* Cor do texto ajustada */}
+        <p className="text-sm text-center mt-4 text-gray-600 dark:text-gray-300">
           Ainda não tem conta?{" "}
           <Link to="/register" className="text-blue-600 dark:text-blue-400 hover:underline"> {/* Cor do link ajustada */}
             Fazer Cadastro
