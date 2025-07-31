@@ -42,7 +42,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
   const [categoryId, setCategoryId] = useState("");
   const [accountId, setAccountId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [status, setStatus] = useState<0 | 1>(0); // Ex: 0 = Pendente. Ajuste o valor inicial conforme seu enum
+  const [status, setStatus] = useState<0 | 1>(0); 
   const [isRecurring, setIsRecurring] = useState(false);
   const [notes] = useState("");
   const [recurrenceInterval, setRecurrenceInterval] = useState<number | undefined>(undefined); // Se for usar recorrência
@@ -59,10 +59,11 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
   const [valueAccount, setIsValueAccount]=useState("");
   const [isNewAccount, setIsNewAccount] = useState(false);
   const [isNewAccountType, setIsNewAccountType]=useState<number>(0);
+  
   useEffect(() => {
-    if (isOpen && categories.length === 0) { // Só busca se o modal abriu e as listas estão vazias
+    if (isOpen && categories.length === 0) {
       const fetchDropdownData = async () => {
-        setIsLoadingDropdowns(true); // Inicia o loading
+        setIsLoadingDropdowns(true);
         const token = localStorage.getItem("token");
         if (!token) {
           setIsLoadingDropdowns(false);
@@ -70,14 +71,11 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
           return;
         }
         try {
-          // Busca de Categorias
-          const categoriesResponse = await axios.get(`${api}/Category`, { // VERIFIQUE A PORTA DO SEU BACKEND AQUI
+          const categoriesResponse = await axios.get(`${api}/Category`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           setCategories(categoriesResponse.data);
-
-          // Busca de Contas Financeiras
-          const accountsResponse = await axios.get(`${api}/account`, { // VERIFIQUE A PORTA DO SEU BACKEND AQUI
+          const accountsResponse = await axios.get(`${api}/account`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           setAccounts(accountsResponse.data);
@@ -85,18 +83,52 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
         } catch (error) {
           addToast("Erro ao carregar dados de dropdown:", "error");
         } finally {
-          setIsLoadingDropdowns(false); // Finaliza o loading
+          setIsLoadingDropdowns(false);
         }
       };
       fetchDropdownData();
     }
-  }, [isOpen, categories.length, accounts.length]); // Dependências: isOpen, e o tamanho das listas para evitar re-fetch desnecessário
+  }, [isOpen, categories.length, accounts.length]);
 
   function handlerNewCategory(){
     setIsNewCategoruy(true);
   }
-  async function ValidCreateAccount(){
+  async function handlerNewAccount(){
     setIsNewAccount(true);
+  }
+  async function ValidCreateAccount(){
+    const token = localStorage.getItem("token");
+    debugger
+    if(valueAccount.length >0){
+      if(isNewAccountType >= 0){
+        var accountdto = {
+          name:valueAccount,
+          InitialBalance:0,
+          type:isNewAccountType
+        };
+        try{
+          var result = await axios.post(`${api}/account`,
+            accountdto,{
+            headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+            }
+          })
+          setAccountId(result.data)
+        }catch(err){
+          addToast("Erro ao cadastrar conta:", "error");
+          setIsSubmitting(false);
+          return;
+        }
+      }else{
+        return;
+      }
+    }
+    else{
+      addToast("Erro ao cadastrar transição", "error");
+      setIsSubmitting(false);
+      return
+    }
   }
   async function ValidCreateCategory() {
     const token = localStorage.getItem("token");
@@ -126,7 +158,9 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
       setIsSubmitting(false);
       return;
     }
+    debugger
     await ValidCreateCategory();
+    await ValidCreateAccount();
     const data: TransactionFormData = {
       amount: parseFloat(amount),
       type,
@@ -237,7 +271,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
 
       <div>
         <label htmlFor="accountId" className="block text-sm font-medium text-gray-700 mb-1">Conta</label>
-          <button type="button" disabled={isNewAccount} onClick={ValidCreateAccount} style={{ background: 'none', border: 'none', color: 'blue', cursor: 'pointer' }}>
+          <button type="button" disabled={isNewAccount} onClick={handlerNewAccount} style={{ background: 'none', border: 'none', color: 'blue', cursor: 'pointer' }}>
             Adicionar Conta
           </button>  
         {isNewAccount === false ?(
@@ -261,7 +295,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
             
               <select
                 id="accountType"
-                value={isNewAccountType} // Usar '' para opção vazia
+                value={isNewAccountType}
                 onChange={(e) => setIsNewAccountType(parseInt(e.target.value))}
                 className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white"
                 required={valueAccount.length > 0}
@@ -269,8 +303,8 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
                 <option value="">Selecione o tipo:</option>
                 <option value="0">Banco</option>
                 <option value="1">Cartão de crédito</option>
-                <option value="2">Pix</option>
-                {/* Adicione outras opções conforme seu enum RecurrenceInterval */}
+                <option value="2">Dinheiro</option>
+                <option value="3">Pix</option>
               </select>
             </div>
             
