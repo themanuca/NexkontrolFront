@@ -3,11 +3,10 @@ import  { useEffect, useState } from "react";
 import axios from "axios";
 import { LogOut, PlusCircle, TrendingDown, TrendingUp, Wallet } from "lucide-react";
 
-// Importações dos seus componentes de UI e utilitários
 import { Button } from "../../components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "../../components/ui/dialog";
+import { subDays, format } from "date-fns";
 
-// Importações dos novos componentes específicos do Dashboard
 import SummaryCard from "../../components/SummaryCard"; // Componente para os cards de resumo
 import TransactionsTable from "../../components/TransactionsTable"; // Componente para a tabela de transações
 import NewTransactionForm from "../../components/NewTransactionForm"; // Componente do formulário de nova transação
@@ -34,8 +33,13 @@ export default function Dashboard() {
   const { addToast } = useToast(); // <--- Use o hook useToast
   const [userName, isUserName]=useState<string|null>();
 
+  const today = new Date();
+  const thirtyDaysAgo = subDays(today, 30);
+  const [startDate, setStartDate] = useState<string>(format(thirtyDaysAgo, "yyyy-MM-dd"));
+  const [endDate, setEndDate] = useState<string>(format(today, "yyyy-MM-dd"));
+
+
   const fetchTransactions = async () => {
-    debugger
     const token = localStorage.getItem("token");
     isUserName(localStorage.getItem("userName"))
     if (!token) {
@@ -74,10 +78,20 @@ export default function Dashboard() {
       handlerLogout();
     }
   };
+
+  const filteredTransactions = transactions.filter((t) => {
+  const tDate = new Date(t.date);
+  const start = startDate ? new Date(startDate) : null;
+  const end = endDate ? new Date(endDate) : null;
+
+  return (!start || tDate >= start) && (!end || tDate <= end);
+});
+
   const handlerLogout = ()=>{
     navigate("/login");
     localStorage.removeItem("token");
   }
+
   useEffect(() => {
     fetchTransactions();
   }, []);
@@ -90,7 +104,7 @@ export default function Dashboard() {
 
   return (
     <div>
-      <div className="shadow-md min-w-screen text-lg flex bg-gray-100 justify-between items-center dark:bg-gray-400 p-6 ease-in-out bg-gradient-to-r ">
+      <div className="shadow-md min-w-screen text-lg flex bg-gray-100 justify-between items-center dark:bg-gray-800 p-6 ease-in-out bg-gradient-to-r ">
         <h2>
           Olá {userName} !
         </h2>
@@ -143,7 +157,32 @@ export default function Dashboard() {
         </section>
 
         <section>
-          <TransactionsTable transactions={transactions} />
+
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Data Inicial</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Data Final</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <TransactionsTable transactions={filteredTransactions} />
+          </div>
         </section>
 
         <section className="mt-10 bg-gray-100 dark:bg-gray-900 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-800">

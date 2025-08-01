@@ -96,38 +96,41 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
   async function handlerNewAccount(){
     setIsNewAccount(true);
   }
+
   async function ValidCreateAccount(){
     const token = localStorage.getItem("token");
-    debugger
-    if(valueAccount.length >0){
-      if(isNewAccountType >= 0){
-        var accountdto = {
-          name:valueAccount,
-          InitialBalance:0,
-          type:isNewAccountType
-        };
-        try{
-          var result = await axios.post(`${api}/account`,
-            accountdto,{
-            headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-            }
-          })
-          setAccountId(result.data)
-        }catch(err){
-          addToast("Erro ao cadastrar conta:", "error");
-          setIsSubmitting(false);
+    if(isNewAccount){
+      if(valueAccount.length >0){
+        if(isNewAccountType >= 0){
+          var accountdto = {
+            name:valueAccount,
+            InitialBalance:0,
+            type:isNewAccountType
+          };
+          try{
+            var result = await axios.post(`${api}/account`,
+              accountdto,{
+              headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json"
+              }
+            })
+            setAccountId(result.data)
+          }catch(err){
+            addToast("Erro ao cadastrar conta:", "error");
+            setIsSubmitting(false);
+            return;
+          }
+        }else{
           return;
         }
-      }else{
-        return;
       }
-    }
-    else{
-      addToast("Erro ao cadastrar transição", "error");
-      setIsSubmitting(false);
-      return
+      else{
+        addToast("Erro ao cadastrar transição", "error");
+        setIsSubmitting(false);
+        return
+      }
+
     }
   }
   async function ValidCreateCategory() {
@@ -158,7 +161,6 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
       setIsSubmitting(false);
       return;
     }
-    debugger
     await ValidCreateCategory();
     await ValidCreateAccount();
     const data: TransactionFormData = {
@@ -193,7 +195,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5 p-2">
-      <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">Nova Transação</h2>
+      <h2 className="text-2xl font-bold text-gray-800 text-center mb-6 dark:text-white">Nova Transação</h2>
 
       <div className="flex rounded-lg overflow-hidden border border-gray-300">
         <button
@@ -217,7 +219,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
       </div>
 
       <div>
-        <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">Valor</label>
+        <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1 dark:text-white">Valor</label>
         <input
           type="number"
           id="amount"
@@ -231,7 +233,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
       </div>
 
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1 dark:text-white">Descrição</label>
         <input
           type="text"
           id="description"
@@ -244,7 +246,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
       </div>
 
       <div>
-        <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+        <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-1 dark:text-white">Categoria</label>
         <button type="button" onClick={handlerNewCategory} style={{ background: 'none', border: 'none', color: 'blue', cursor: 'pointer' }}>
           Adicionar Categoria
         </button>  
@@ -254,7 +256,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
           id="categoryId"
           value={categoryId}
           onChange={(e) => setCategoryId(e.target.value)}
-          className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white"
+          className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700"
           required
           disabled={isLoadingDropdowns} // Desabilita enquanto carrega
         >
@@ -265,12 +267,12 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
         </select>
         ):(
           <input type="text" value={valorCategoria} onChange={e => setValorCategoria(e.target.value)} 
-          className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white"/>
+          className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700"/>
         )}
       </div>
 
       <div>
-        <label htmlFor="accountId" className="block text-sm font-medium text-gray-700 mb-1">Conta</label>
+        <label htmlFor="accountId" className="block text-medium font-medium text-gray-700 mb-1 dark:text-white">Conta</label>
           <button type="button" disabled={isNewAccount} onClick={handlerNewAccount} style={{ background: 'none', border: 'none', color: 'blue', cursor: 'pointer' }}>
             Adicionar Conta
           </button>  
@@ -279,7 +281,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
             id="accountId"
             value={accountId}
             onChange={(e) => setAccountId(e.target.value)}
-            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white"
+            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700"
             // required
             disabled={isLoadingDropdowns}
           >
@@ -314,7 +316,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
       </div>
 
       <div>
-        <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">Data</label>
+        <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1 dark:text-white">Data</label>
         <input
           type="date"
           id="date"
@@ -326,12 +328,12 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
       </div>
 
       <div>
-          <label htmlFor="recurrenceInterval" className="block text-sm font-medium text-gray-700 mb-1">Intervalo de Recorrência</label>
+          <label htmlFor="recurrenceInterval" className="block text-sm font-medium text-gray-700 mb-1 dark:text-white">Intervalo de Recorrência</label>
           <select
             id="recurrenceInterval"
             value={recurrenceInterval ?? ""} // Usar '' para opção vazia
             onChange={(e) => setRecurrenceInterval(parseInt(e.target.value) || undefined)}
-            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white"
+            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-whitea dark:bg-gray-700"
             required={isRecurring}
           >
             <option value="">Selecione o Intervalo</option>
@@ -351,24 +353,22 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen }: Props
             onChange={(e) => setIsRecurring(e.target.checked)}
             className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
           />
-          <label htmlFor="isRecurring" className="ml-2 block text-sm text-gray-900">Transação Recorrente?</label>
+          <label htmlFor="isRecurring" className="ml-2 block text-sm text-gray-900 dark:text-white">Transação Recorrente?</label>
         </div>
         <div>
-          <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+          <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1 dark:text-white">Status</label>
           <select
             id="status"
             value={status}
             onChange={(e) => setStatus(parseInt(e.target.value) as 0 | 1)} // Adapte para seus valores de enum
-            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white"
+            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700"
             required
           >
             <option value="0">Pendente</option>
             <option value="1">Concluída</option>
-            {/* Adicione outras opções conforme seu enum TransactionStatus */}
           </select>
         </div>
       <div className="flex justify-end gap-3 pt-4">
-        {/* CORREÇÃO AQUI: Colocando o Button na mesma linha para evitar whitespace text nodes */}
         <DialogClose asChild><Button type="button" variant="outline">Cancelar</Button></DialogClose>
         <Button
           type="submit"

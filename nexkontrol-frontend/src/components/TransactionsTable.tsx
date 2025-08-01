@@ -35,7 +35,7 @@ export default function TransactionsTable({ transactions }: Props) {
             </tr>
           </thead>
           <tbody>
-            {transactions.slice(0, 5).map((t) => (
+            {transactions.map((t) => (
               // REMOVIDO WHITESPACE AQUI
               <tr key={t.id} className="border-b border-gray-100 hover:bg-gray-50">
                 <td className="py-3 px-2">
