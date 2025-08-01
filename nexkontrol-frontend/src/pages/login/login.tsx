@@ -1,38 +1,26 @@
 // src/pages/Login.tsx
-// Componente da página de Login com suporte a tema claro/escuro.
-
 import { useState } from "react";
-import { login } from "../../api/auth"; // Importa a função de login (verifique o caminho)
-import { Link, useNavigate } from "react-router-dom"; // Importa Link e useNavigate do React Router
-import { useToast } from "../../Context/ToastContext";
+import { Link } from "react-router-dom";
+import { useAuthContext } from "../../Context/AuthContext";
 import { Loader2 } from "lucide-react";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error] = useState(""); // Estado para exibir mensagens de erro
-  const navigate = useNavigate(); // Hook para navegação programática
-  const { addToast, removeToast } = useToast(); // <--- Use o hook useToast
   const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuthContext();
 
   // Função para lidar com o envio do formulário de login
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    var autenticao = addToast("Autenticando...", "loading",1);
+    
     try {
-      const res = await login(email, password);
-      localStorage.setItem("token", res.token);
-      localStorage.setItem("userName", res.name)
-
-      addToast("Login relizado com sucesso.","success");
-      navigate("/dashboard");
-    } catch (err:any) {
-      var res:string = err.response.data.error
-      addToast(res,"error");
-    }finally{
+      await login({ email, password });
+    } catch (error) {
+      // Erro já tratado no hook useAuth
+    } finally {
       setIsLoading(false);
-      removeToast(autenticao)
     }
   };
 
@@ -45,8 +33,7 @@ export default function Login() {
         {/* Título do formulário */}
         <h2 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-gray-100">Login</h2> {/* Cor do texto ajustada */}
 
-        {/* Exibe mensagem de erro se houver */}
-        {error && <p className="text-red-500 dark:text-red-400 mb-4">{error}</p>}
+
 
         {/* Campo de Email */}
         <input

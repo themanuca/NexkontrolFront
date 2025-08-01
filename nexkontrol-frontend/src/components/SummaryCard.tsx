@@ -1,24 +1,51 @@
 // src/components/SummaryCard.tsx
-import { Card } from "../components/ui/card"; // Importe Card e CardContent
-import { cn } from "../lib/utils";
-import type { LucideIcon } from "lucide-react"; // Para tipagem do ícone
- // Para tipagem do ícone
+import React from "react";
+import { Card } from "./ui/card";
+import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import { formatCurrency } from "../lib/utils";
+import { CardContent } from "./ui/cardContent";
 
 interface SummaryCardProps {
   title: string;
-  amount: number;
-  icon: LucideIcon; // Novo: para passar o ícone
-  iconColorClass: string; // Novo: cor do ícone e do texto do valor
+  value: number;
+  icon: React.ReactNode;
+  trend?: "up" | "down";
+  className?: string;
 }
 
-export default function SummaryCard({ title, amount, icon: Icon, iconColorClass }: SummaryCardProps) {
+const SummaryCard = React.memo<SummaryCardProps>(({ title, value, icon, trend, className }) => {
   return (
-    <Card className="flex flex-col gap-2 p-5 items-start"> {/* Ajuste de padding e alinhamento */}
+    <Card className={`flex flex-col gap-2 p-5 items-start ${className || ""}`}>
       <span className="text-sm text-gray-500">{title}</span>
-      <div className={cn("text-xl font-bold flex items-center gap-2", iconColorClass)}>
-        <Icon className="w-5 h-5" />
-        R$ {amount.toFixed(2)}
+      <div className="text-xl font-bold flex items-center gap-2">
+        {icon}
+        {formatCurrency(value)}
       </div>
+      {trend && (
+        <div className="flex items-center mt-1">
+          {trend === "up" ? (
+            <TrendingUp 
+              className="w-4 h-4 text-green-500 mr-1" 
+              aria-hidden="true"
+            />
+          ) : (
+            <TrendingDown 
+              className="w-4 h-4 text-red-500 mr-1" 
+              aria-hidden="true"
+            />
+          )}
+          <span 
+            className={`text-sm ${trend === "up" ? "text-green-600" : "text-red-600"}`}
+            aria-label={`Tendência: ${trend === "up" ? "Crescimento" : "Redução"}`}
+          >
+            {trend === "up" ? "Crescimento" : "Redução"}
+          </span>
+        </div>
+      )}
     </Card>
   );
-}
+});
+
+SummaryCard.displayName = 'SummaryCard';
+
+export default SummaryCard;

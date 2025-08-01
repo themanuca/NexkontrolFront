@@ -1,114 +1,92 @@
 // src/pages/Dashboard.tsx
-import  { useEffect, useState } from "react";
-import axios from "axios";
+import { useState } from "react";
 import { LogOut, PlusCircle, TrendingDown, TrendingUp, Wallet } from "lucide-react";
-
 import { Button } from "../../components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "../../components/ui/dialog";
 import { subDays, format } from "date-fns";
 
-import SummaryCard from "../../components/SummaryCard"; // Componente para os cards de resumo
-import TransactionsTable from "../../components/TransactionsTable"; // Componente para a tabela de transações
-import NewTransactionForm from "../../components/NewTransactionForm"; // Componente do formulário de nova transação
-import { useNavigate } from "react-router-dom";
-import { useToast } from "../../Context/ToastContext";
-// Interface unificada para Transação (0 = Entrada, 1 = Saída)
-interface Transaction {
-  id: string;
-  date: string;
-  description: string;
-  categoryName:string; // Categoria pode ser um objeto ou null
-  type: 0 | 1; // 0 para Entrada, 1 para Saída
-  amount: number;
-  status:0 | 1;
-  isRecurring: boolean;
-  notes:string;
-}
+import SummaryCard from "../../components/SummaryCard";
+import TransactionsTable from "../../components/TransactionsTable";
+import TransactionFilters from "../../components/TransactionFilters";
+import TransactionChart from "../../components/charts/TransactionChart";
+import NewTransactionForm from "../../components/NewTransactionForm";
+import ConfirmDialog from "../../components/ui/ConfirmDialog";
+import { useAuthContext } from "../../Context/AuthContext";
+import { useTransactions } from "../../hooks/useTransactions";
+import { TransactionType } from "../../types/Transaction";
+import { SkeletonCard, SkeletonTable } from "../../components/ui/Skeleton";
 
 export default function Dashboard() {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [totals, setTotals] = useState({ income: 0, expense: 0, balance: 0 });
-  const [isModalOpen, setIsModalOpen] = useState(false); // Estado para controlar o modal
-  const navigate = useNavigate();
-  const { addToast } = useToast(); // <--- Use o hook useToast
-  const [userName, isUserName]=useState<string|null>();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<any>(null);
+  const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; transactionId: string | null }>({
+    isOpen: false,
+    transactionId: null
+  });
+  const { user, logout } = useAuthContext();
+  const { 
+    totals, 
+    filteredTransactions, 
+    setDateRange, 
+    createTransaction,
+    updateTransaction,
+    deleteTransaction,
+    isLoading,
+    // Filtros
+    searchTerm,
+    setSearchTerm,
+    selectedCategory,
+    setSelectedCategory,
+    selectedType,
+    setSelectedType,
+    clearFilters,
+  } = useTransactions();
 
+  // Configurar data inicial (últimos 30 dias)
   const today = new Date();
   const thirtyDaysAgo = subDays(today, 30);
-  const [startDate, setStartDate] = useState<string>(format(thirtyDaysAgo, "yyyy-MM-dd"));
-  const [endDate, setEndDate] = useState<string>(format(today, "yyyy-MM-dd"));
-
-
-  const fetchTransactions = async () => {
-    const token = localStorage.getItem("token");
-    isUserName(localStorage.getItem("userName"))
-    if (!token) {
-      addToast("Token de autenticação não encontrado.","error");
-      // Redirecionar para a página de login ou exibir uma mensagem
-      return;
-    }
-    try {
-      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/transactions`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const fetchedTransactions: Transaction[] = response.data.map((t: any) => ({
-        ...t,
-        // Garante que 'type' é 0 ou 1 e 'category' é um objeto com 'name'
-        type: t.type === 'Entrada' ? 0 : (t.type === 'Saída' ? 1 : t.type), // Ajusta se a API retorna string
-        category: t.category ? { id: t.categoryId, name: t.category } : null, // Adapta se a API retorna 'category' como string
-      }));
-
-      setTransactions(fetchedTransactions);
-
-      const income = fetchedTransactions
-        .filter((t: Transaction) => t.type === 0)
-        .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
-
-      const expense = fetchedTransactions
-        .filter((t: Transaction) => t.type === 1)
-        .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
-
-      setTotals({ income, expense, balance: income - expense });
-
-    } catch (error) {
-      addToast("Erro ao buscar transações:", "error");
-      handlerLogout();
-    }
-  };
-
-  const filteredTransactions = transactions.filter((t) => {
-  const tDate = new Date(t.date);
-  const start = startDate ? new Date(startDate) : null;
-  const end = endDate ? new Date(endDate) : null;
-
-  return (!start || tDate >= start) && (!end || tDate <= end);
-});
-
-  const handlerLogout = ()=>{
-    navigate("/login");
-    localStorage.removeItem("token");
-  }
-
-  useEffect(() => {
-    fetchTransactions();
-  }, []);
+  const initialStartDate = format(thirtyDaysAgo, "yyyy-MM-dd");
+  const initialEndDate = format(today, "yyyy-MM-dd");
 
   // Handler para quando uma transação é adicionada com sucesso
   const handleTransactionSuccess = () => {
-    fetchTransactions(); // Recarrega os dados
-    setIsModalOpen(false); // Fecha o modal
+    setIsModalOpen(false);
+    setEditingTransaction(null);
   };
+
+  // Handler para editar transação
+  const handleEditTransaction = (transaction: any) => {
+    setEditingTransaction(transaction);
+    setIsModalOpen(true);
+  };
+
+  // Handler para excluir transação
+  const handleDeleteTransaction = (transactionId: string) => {
+    setDeleteDialog({ isOpen: true, transactionId });
+  };
+
+  const confirmDelete = async () => {
+    if (deleteDialog.transactionId) {
+      try {
+        await deleteTransaction(deleteDialog.transactionId);
+      } catch (error) {
+        // Erro já tratado no hook
+      }
+    }
+  };
+
+  // Extrair categorias únicas das transações
+  const categories = Array.from(
+    new Set(filteredTransactions.map(t => t.categoryName))
+  ).map(name => ({ id: name, categoryName: name }));
 
   return (
     <div>
       <div className="shadow-md min-w-screen text-lg flex bg-gray-100 justify-between items-center dark:bg-gray-800 p-6 ease-in-out bg-gradient-to-r ">
         <h2>
-          Olá {userName} !
+          Olá {user?.name} !
         </h2>
-        <button onClick={handlerLogout} className="flex shadow-md transition-all duration-200 ease-in-out bg-gradient-to-r">
+        <button onClick={logout} className="flex shadow-md transition-all duration-200 ease-in-out bg-gradient-to-r">
           <LogOut className="w-5 h-5"/>
         </button>
       </div>    
@@ -119,7 +97,6 @@ export default function Dashboard() {
             Painel de Controle
           </h1>
           <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            {/* O DialogTrigger com asChild deve ter APENAS UM filho */}
             <DialogTrigger asChild>
               <Button className="flex items-center gap-2 px-6 py-3 rounded-xl shadow-md transition-all duration-200 ease-in-out bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white transform hover:scale-105">
                 <PlusCircle className="w-5 h-5" /> Nova Transação
@@ -130,58 +107,107 @@ export default function Dashboard() {
                 onSuccess={handleTransactionSuccess}
                 onClose={() => setIsModalOpen(false)}
                 isOpen={isModalOpen}
+                editingTransaction={editingTransaction}
               />
             </DialogContent>
           </Dialog>
         </header>
 
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-          <SummaryCard
-            title="Entradas"
-            amount={totals.income}
-            icon={TrendingUp}
-            iconColorClass="text-green-600 dark:text-green-400"
-          />
-          <SummaryCard
-            title="Saídas"
-            amount={totals.expense}
-            icon={TrendingDown}
-            iconColorClass="text-red-600 dark:text-red-400"
-          />
-          <SummaryCard
-            title="Saldo Total"
-            amount={totals.balance}
-            icon={Wallet}
-            iconColorClass={totals.balance >= 0 ? "text-blue-600 dark:text-blue-400" : "text-red-600 dark:text-red-400"}
-          />
+          {isLoading ? (
+            <>
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
+            </>
+          ) : (
+            <>
+              <SummaryCard
+                title="Entradas"
+                value={totals.income}
+                icon={<TrendingUp className="w-5 h-5 text-green-600" />}
+                trend="up"
+                className="text-green-600"
+              />
+              <SummaryCard
+                title="Saídas"
+                value={totals.expense}
+                icon={<TrendingDown className="w-5 h-5 text-red-600" />}
+                trend="down"
+                className="text-red-600"
+              />
+              <SummaryCard
+                title="Saldo Total"
+                value={totals.balance}
+                icon={<Wallet className="w-5 h-5" />}
+                className={totals.balance >= 0 ? "text-blue-600" : "text-red-600"}
+              />
+            </>
+          )}
+        </section>
+
+        {/* Gráficos */}
+        <section className="mb-10">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-50 mb-6">
+            Análise Visual
+          </h2>
+          {isLoading ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <SkeletonCard />
+              <SkeletonCard />
+            </div>
+          ) : (
+            <TransactionChart transactions={filteredTransactions} />
+          )}
         </section>
 
         <section>
+          {/* Filtros */}
+          <TransactionFilters
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+            selectedType={selectedType}
+            onTypeChange={setSelectedType}
+            categories={categories}
+            onClearFilters={clearFilters}
+          />
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Data Inicial</label>
               <input
                 type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                defaultValue={initialStartDate}
+                onChange={(e) => setDateRange(e.target.value, initialEndDate)}
                 className="px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-500"
+                disabled={isLoading}
               />
             </div>
-
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Data Final</label>
               <input
                 type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
+                defaultValue={initialEndDate}
+                onChange={(e) => setDateRange(initialStartDate, e.target.value)}
                 className="px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-500"
+                disabled={isLoading}
               />
             </div>
           </div>
 
           <div className="overflow-x-auto">
-            <TransactionsTable transactions={filteredTransactions} />
+            {isLoading ? (
+              <SkeletonTable />
+            ) : (
+              <TransactionsTable 
+                transactions={filteredTransactions}
+                onEdit={handleEditTransaction}
+                onDelete={handleDeleteTransaction}
+              />
+            )}
           </div>
         </section>
 
@@ -195,6 +221,18 @@ export default function Dashboard() {
         </section>
       </div>
     </div>
+
+    {/* Modal de Confirmação de Exclusão */}
+    <ConfirmDialog
+      isOpen={deleteDialog.isOpen}
+      onClose={() => setDeleteDialog({ isOpen: false, transactionId: null })}
+      onConfirm={confirmDelete}
+      title="Excluir Transação"
+      message="Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita."
+      confirmText="Excluir"
+      cancelText="Cancelar"
+      type="danger"
+    />
   </div>
   );
 }
