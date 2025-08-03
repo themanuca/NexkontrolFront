@@ -1,6 +1,6 @@
 // src/pages/Dashboard.tsx
 import { useState } from "react";
-import { LogOut, PlusCircle, TrendingDown, TrendingUp, Wallet } from "lucide-react";
+import { LogOut, PlusCircle, TrendingDown, TrendingUp, Wallet, RefreshCw } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "../../components/ui/dialog";
 import { subDays, format } from "date-fns";
@@ -28,6 +28,7 @@ export default function Dashboard() {
     filteredTransactions, 
     setDateRange, 
     deleteTransaction,
+    fetchTransactions,
     isLoading,
     // Filtros
     searchTerm,
@@ -46,9 +47,14 @@ export default function Dashboard() {
   const initialEndDate = format(today, "yyyy-MM-dd");
 
   // Handler para quando uma transação é adicionada com sucesso
-  const handleTransactionSuccess = () => {
+  const handleTransactionSuccess = async () => {
     setIsModalOpen(false);
     setEditingTransaction(null);
+    
+    // Aguardar um pouco e forçar recarregamento
+    setTimeout(() => {
+      fetchTransactions();
+    }, 500);
   };
 
   // Handler para editar transação
@@ -93,21 +99,40 @@ export default function Dashboard() {
           <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-50">
             Painel de Controle
           </h1>
-          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <DialogTrigger asChild>
-              <Button className="flex items-center gap-2 px-6 py-3 rounded-xl shadow-md transition-all duration-200 ease-in-out bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white transform hover:scale-105">
-                <PlusCircle className="w-5 h-5" /> Nova Transação
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <NewTransactionForm
-                onSuccess={handleTransactionSuccess}
-                onClose={() => setIsModalOpen(false)}
-                isOpen={isModalOpen}
-                editingTransaction={editingTransaction}
-              />
-            </DialogContent>
-          </Dialog>
+          <div className="flex gap-3">
+            <Button 
+              onClick={fetchTransactions}
+              disabled={isLoading}
+              className="flex items-center gap-2 px-4 py-3 rounded-xl shadow-md transition-all duration-200 ease-in-out bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white transform hover:scale-105"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+              {isLoading ? 'Carregando...' : 'Atualizar'}
+            </Button>
+            
+            <Dialog open={isModalOpen} onOpenChange={(open) => {
+              setIsModalOpen(open);
+              if (!open) {
+                setEditingTransaction(null);
+              }
+            }}>
+              <DialogTrigger asChild>
+                <Button className="flex items-center gap-2 px-6 py-3 rounded-xl shadow-md transition-all duration-200 ease-in-out bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white transform hover:scale-105">
+                  <PlusCircle className="w-5 h-5" /> Nova Transação
+                </Button>
+              </DialogTrigger>
+                          <DialogContent>
+                <NewTransactionForm
+                  onSuccess={handleTransactionSuccess}
+                  onClose={() => {
+                    setIsModalOpen(false);
+                    setEditingTransaction(null);
+                  }}
+                  isOpen={isModalOpen}
+                  editingTransaction={editingTransaction}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
         </header>
 
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">

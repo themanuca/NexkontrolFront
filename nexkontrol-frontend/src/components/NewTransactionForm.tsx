@@ -46,7 +46,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
 
   // Preencher formulário quando estiver editando
   useEffect(() => {
-    if (editingTransaction) {
+    if (editingTransaction && isOpen) {
       setAmount(editingTransaction.amount.toString());
       setType(editingTransaction.type);
       setDescription(editingTransaction.description);
@@ -57,7 +57,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
       setIsRecurring(editingTransaction.isRecurring);
       setNotes(editingTransaction.notes || "");
       setRecurrenceInterval(editingTransaction.recurrenceInterval);
-    } else {
+    } else if (isOpen) {
       // Resetar formulário para nova transação
       setAmount("");
       setType(TransactionType.EXPENSE);
@@ -65,7 +65,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
       setDate(new Date().toISOString().split("T")[0]);
       setCategoryId("");
       setAccountId("");
-             setStatus(TransactionStatus.PAID);
+      setStatus(TransactionStatus.PAID);
       setIsRecurring(false);
       setNotes("");
       setRecurrenceInterval(undefined);
@@ -168,6 +168,8 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
         recurrenceInterval: isRecurring ? recurrenceInterval : undefined,
       };
 
+      console.log('Dados sendo enviados:', data);
+
       if (editingTransaction) {
         await updateTransaction(editingTransaction.id, data);
         addToast("Transação atualizada com sucesso!", "success");
@@ -175,6 +177,9 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
         await createTransaction(data);
         addToast("Transação criada com sucesso!", "success");
       }
+
+      // Aguardar um pouco para garantir que o backend processou
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       onSuccess();
       onClose();

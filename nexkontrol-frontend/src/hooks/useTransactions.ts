@@ -107,12 +107,27 @@ export const useTransactions = (): UseTransactionsReturn => {
       const fetchedTransactions = await apiService.getTransactions();
       
       // Normalizar dados da API
+      console.log('Dados recebidos da API:', fetchedTransactions);
+      
+      // Normalizar dados da API
       const normalizedTransactions = fetchedTransactions.map((t: any) => ({
         ...t,
-        type: t.type === 'Entrada' ? TransactionType.INCOME : 
-              t.type === 'Saída' ? TransactionType.EXPENSE : t.type,
-        categoryName: t.categoryName || t.category || '-',
+        id: t.id || t.Id,
+        amount: parseFloat(t.amount || t.Amount || 0),
+        date: t.date || t.Date,
+        description: t.description || t.Description || '',
+        categoryName: t.categoryName || t.CategoryName || t.category || '-',
+        type: typeof t.type === 'number' ? t.type : 
+              t.type === 'Entrada' ? TransactionType.INCOME : 
+              t.type === 'Saída' ? TransactionType.EXPENSE : 
+              t.type === 'Income' ? TransactionType.INCOME : TransactionType.EXPENSE,
+        status: typeof t.status === 'number' ? t.status : 
+                t.status === 'Paid' ? 0 : 1,
+        isRecurring: Boolean(t.isRecurring || t.IsRecurring),
+        notes: t.notes || t.Notes || '',
       }));
+
+      console.log('Dados normalizados:', normalizedTransactions);
 
       setTransactions(normalizedTransactions);
     } catch (error: any) {
