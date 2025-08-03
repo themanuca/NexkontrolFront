@@ -24,7 +24,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
   const [categoryId, setCategoryId] = useState("");
   const [accountId, setAccountId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [status, setStatus] = useState<TransactionStatus>(TransactionStatus.PENDING);
+  const [status, setStatus] = useState<TransactionStatus>(TransactionStatus.PAID);
   const [isRecurring, setIsRecurring] = useState(false);
   const [notes, setNotes] = useState("");
   const [recurrenceInterval, setRecurrenceInterval] = useState<RecurrenceInterval | undefined>(undefined);
@@ -65,7 +65,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
       setDate(new Date().toISOString().split("T")[0]);
       setCategoryId("");
       setAccountId("");
-      setStatus(TransactionStatus.PENDING);
+             setStatus(TransactionStatus.PAID);
       setIsRecurring(false);
       setNotes("");
       setRecurrenceInterval(undefined);
@@ -380,16 +380,16 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
 
       <div>
         <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1 dark:text-white">Status</label>
-        <select
-          id="status"
-          value={status}
-          onChange={(e) => setStatus(parseInt(e.target.value) as TransactionStatus)}
-          className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700"
-          required
-        >
-          <option value={TransactionStatus.PENDING}>Pendente</option>
-          <option value={TransactionStatus.COMPLETED}>Concluída</option>
-        </select>
+                 <select
+           id="status"
+           value={status}
+           onChange={(e) => setStatus(parseInt(e.target.value) as TransactionStatus)}
+           className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700"
+           required
+         >
+           <option value={TransactionStatus.PAID}>Concluída</option>
+           <option value={TransactionStatus.PENDING}>Pendente</option>
+         </select>
       </div>
 
       <div className="flex justify-end gap-3 pt-4">

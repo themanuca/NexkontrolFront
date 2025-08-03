@@ -1,6 +1,6 @@
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { Transaction, TransactionFormData, Category } from '../types/Transaction';
-import { Account } from '../types/Account';
+import axios, { type AxiosInstance, type AxiosResponse } from 'axios';
+import type { Transaction, TransactionFormData, Category } from '../types/Transaction';
+import type { Account } from '../types/Account';
 
 // Interface para resposta de autenticação
 export interface AuthResponse {
@@ -61,54 +61,54 @@ class ApiService {
 
   // Métodos de autenticação
   async login(data: LoginData): Promise<AuthResponse> {
-    const response: AxiosResponse<AuthResponse> = await this.api.post('/auth/login', data);
+    const response: AxiosResponse<AuthResponse> = await this.api.post('/api/auth/login', data);
     return response.data;
   }
 
   async register(data: RegisterData): Promise<AuthResponse> {
-    const response: AxiosResponse<AuthResponse> = await this.api.post('/auth/register', data);
+    const response: AxiosResponse<AuthResponse> = await this.api.post('/api/auth/register', data);
     return response.data;
   }
 
   // Métodos de transações
   async getTransactions(): Promise<Transaction[]> {
-    const response: AxiosResponse<Transaction[]> = await this.api.get('/transactions');
+    const response: AxiosResponse<Transaction[]> = await this.api.get('/api/transactions');
     return response.data;
   }
 
   async createTransaction(data: TransactionFormData): Promise<Transaction> {
-    const response: AxiosResponse<Transaction> = await this.api.post('/transactions', data);
+    const response: AxiosResponse<Transaction> = await this.api.post('/api/transactions', data);
     return response.data;
   }
 
   async updateTransaction(id: string, data: TransactionFormData): Promise<Transaction> {
-    const response: AxiosResponse<Transaction> = await this.api.put(`/transactions/${id}`, data);
+    const response: AxiosResponse<Transaction> = await this.api.put(`/api/transactions/${id}`, data);
     return response.data;
   }
 
   async deleteTransaction(id: string): Promise<void> {
-    await this.api.delete(`/transactions/${id}`);
+    await this.api.delete(`/api/transactions/${id}`);
   }
 
   // Métodos de categorias
   async getCategories(): Promise<Category[]> {
-    const response: AxiosResponse<Category[]> = await this.api.get('/Category');
+    const response: AxiosResponse<Category[]> = await this.api.get('/api/category');
     return response.data;
   }
 
   async createCategory(categoryName: string): Promise<string> {
-    const response: AxiosResponse<string> = await this.api.post('/Category', { categoryName });
+    const response: AxiosResponse<string> = await this.api.post('/api/category', { categoryName });
     return response.data;
   }
 
   // Métodos de contas
   async getAccounts(): Promise<Account[]> {
-    const response: AxiosResponse<Account[]> = await this.api.get('/account');
+    const response: AxiosResponse<Account[]> = await this.api.get('/api/account');
     return response.data;
   }
 
   async createAccount(data: { name: string; InitialBalance: number; type: number }): Promise<string> {
-    const response: AxiosResponse<string> = await this.api.post('/account', data);
+    const response: AxiosResponse<string> = await this.api.post('/api/account', data);
     return response.data;
   }
 
@@ -116,7 +116,7 @@ class ApiService {
   async validateToken(): Promise<boolean> {
     try {
       // Usar o endpoint de transações como validação, já que requer autenticação
-      await this.api.get('/transactions');
+      await this.api.get('/api/transactions');
       return true;
     } catch {
       return false;

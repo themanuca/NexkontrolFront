@@ -16,8 +16,8 @@ export enum TransactionType {
 }
 
 export enum TransactionStatus {
-  PENDING = 0,
-  COMPLETED = 1
+  PAID = 0,      // Concluída/Paga
+  PENDING = 1    // Pendente
 }
 
 export interface TransactionFormData {
