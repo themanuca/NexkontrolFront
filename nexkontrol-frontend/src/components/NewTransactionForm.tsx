@@ -106,7 +106,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
     setIsNewAccount(true);
   }
 
-  async function ValidCreateAccount() {
+  async function ValidCreateAccount(): Promise<boolean> {
     if (isNewAccount && valueAccount.length > 0 && isNewAccountType >= 0) {
       const accountdto = {
         name: valueAccount,
@@ -114,37 +114,47 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
         type: isNewAccountType
       };
       try {
+        console.log('Criando conta:', accountdto);
         const result = await apiService.createAccount(accountdto);
+        console.log('Conta criada, ID retornado:', result);
         setAccountId(result);
         setIsNewAccount(false);
         setIsValueAccount("");
         // Recarregar lista de contas
         const accountsResponse = await apiService.getAccounts();
         setAccounts(accountsResponse);
+        return true;
       } catch (err) {
+        console.error('Erro ao criar conta:', err);
         addToast("Erro ao cadastrar conta:", "error");
         setIsSubmitting(false);
-        return;
+        return false;
       }
     }
+    return true; // Se não há nova conta para criar, retorna true
   }
 
-  async function ValidCreateCategory() {
+  async function ValidCreateCategory(): Promise<boolean> {
     if (isNewCategoruy && valorCategoria.length > 0) {
       try {
+        console.log('Criando categoria:', valorCategoria);
         const result = await apiService.createCategory(valorCategoria);
+        console.log('Categoria criada, ID retornado:', result);
         setCategoryId(result);
         setIsNewCategoruy(false);
         setValorCategoria("");
         // Recarregar lista de categorias
         const categoriesResponse = await apiService.getCategories();
         setCategories(categoriesResponse);
+        return true;
       } catch (error) {
+        console.error('Erro ao criar categoria:', error);
         addToast("Erro ao cadastrar categoria:", "error");
         setIsSubmitting(false);
-        return;
+        return false;
       }
     }
+    return true; // Se não há nova categoria para criar, retorna true
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -152,8 +162,27 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
     setIsSubmitting(true);
 
     try {
-      await ValidCreateCategory();
-      await ValidCreateAccount();
+      // Validar se as operações de criação foram bem-sucedidas
+      const categoryCreated = await ValidCreateCategory();
+      const accountCreated = await ValidCreateAccount();
+
+      // Se alguma das operações falhou, parar aqui
+      if (!categoryCreated || !accountCreated) {
+        return;
+      }
+
+      // Validar se accountId e categoryId estão definidos
+      if (!accountId || !categoryId) {
+        addToast("Por favor, selecione uma conta e uma categoria", "error");
+        return;
+      }
+
+      // Validar se os IDs são GUIDs válidos
+      const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!guidRegex.test(accountId) || !guidRegex.test(categoryId)) {
+        addToast("IDs de conta ou categoria inválidos", "error");
+        return;
+      }
 
       const data: TransactionFormData = {
         amount: parseFloat(amount),
