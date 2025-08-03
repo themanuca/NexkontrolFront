@@ -3,7 +3,7 @@ import React from "react";
 import { Card } from "../components/ui/card";
 import { cn, formatCurrency } from "../lib/utils";
 import { type Transaction, TransactionType } from "../types/Transaction";
-import { Edit, Trash2, MoreHorizontal } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 
 interface Props {
   transactions: Transaction[];

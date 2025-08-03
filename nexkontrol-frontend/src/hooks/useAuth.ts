@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiService, AuthResponse, LoginData, RegisterData } from '../services/api';
+import { apiService, type AuthResponse, type LoginData, type RegisterData } from '../services/api';
 import { useToast } from '../Context/ToastContext';
 
 interface UseAuthReturn {

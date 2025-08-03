@@ -1,9 +1,8 @@
 // src/components/SummaryCard.tsx
 import React from "react";
 import { Card } from "./ui/card";
-import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import { TrendingUp, TrendingDown } from "lucide-react";
 import { formatCurrency } from "../lib/utils";
-import { CardContent } from "./ui/cardContent";
 
 interface SummaryCardProps {
   title: string;

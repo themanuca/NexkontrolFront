@@ -13,7 +13,6 @@ import NewTransactionForm from "../../components/NewTransactionForm";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import { useAuthContext } from "../../Context/AuthContext";
 import { useTransactions } from "../../hooks/useTransactions";
-import { TransactionType } from "../../types/Transaction";
 import { SkeletonCard, SkeletonTable } from "../../components/ui/Skeleton";
 
 export default function Dashboard() {
@@ -28,8 +27,6 @@ export default function Dashboard() {
     totals, 
     filteredTransactions, 
     setDateRange, 
-    createTransaction,
-    updateTransaction,
     deleteTransaction,
     isLoading,
     // Filtros
