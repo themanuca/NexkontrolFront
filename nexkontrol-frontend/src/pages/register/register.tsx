@@ -1,29 +1,24 @@
 import { useState } from "react";
-import { register } from "../../api/auth";
-import { useNavigate, Link } from "react-router-dom";
-import { useToast } from "../../Context/ToastContext";
+import {  Link } from "react-router-dom";
+import { useAuthContext } from "../../Context/AuthContext";
 
 export default function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { addToast } = useToast();
-  const navigate = useNavigate();
+  const { register } = useAuthContext();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    addToast("Carregando...", "info");
     try {
-      const res = await register(name, email, password);
-      localStorage.setItem("token", res.token);
-      navigate("/dashboard");
+      await register({ name, email, password });
+      // O hook useAuth já gerencia o token, estado e navegação
     } catch (err) {
-      addToast("Erro ao registrar. Tente novamente.","error");
-    }finally{
+      // Erro já tratado no hook useAuth
+    } finally {
       setIsLoading(false);
     }
   };
@@ -35,8 +30,6 @@ export default function Register() {
         className="bg-gray-50 dark:bg-gray-800 p-8 rounded-xl shadow-md w-full max-w-sm"
       >
         <h2 className="text-2xl font-bold mb-6 text-center dark:text-gray-100">Cadastro</h2>
-
-        {error && <p className="text-red-500 mb-4">{error}</p>}
 
         <input
           type="text"
@@ -70,7 +63,7 @@ export default function Register() {
           className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition-colors duration-200"
           disabled={isLoading}
         >
-          Cadastrar
+          {isLoading ? "Cadastrando..." : "Cadastrar"}
         </button>
 
         <p className="text-sm text-center mt-4 text-gray-600 dark:text-gray-300">

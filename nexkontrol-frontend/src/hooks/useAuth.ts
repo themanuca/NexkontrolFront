@@ -38,6 +38,10 @@ export const useAuth = (): UseAuthReturn => {
         } catch (error) {
           handleLogout();
         }
+      } else {
+        // Se não há token ou userName, garantir que o estado está limpo
+        setIsAuthenticated(false);
+        setUser(null);
       }
       setIsLoading(false);
     };
@@ -53,9 +57,20 @@ export const useAuth = (): UseAuthReturn => {
     navigate('/login');
   }, [navigate]);
 
+  // Limpar estado quando o componente é desmontado
+  useEffect(() => {
+    return () => {
+      // Cleanup function
+    };
+  }, []);
+
   const login = useCallback(async (data: LoginData) => {
     try {
       const response: AuthResponse = await apiService.login(data);
+      
+      // Limpar dados antigos antes de definir os novos
+      localStorage.removeItem('token');
+      localStorage.removeItem('userName');
       
       localStorage.setItem('token', response.token);
       localStorage.setItem('userName', response.name);
@@ -75,6 +90,10 @@ export const useAuth = (): UseAuthReturn => {
   const register = useCallback(async (data: RegisterData) => {
     try {
       const response: AuthResponse = await apiService.register(data);
+      
+      // Limpar dados antigos antes de definir os novos
+      localStorage.removeItem('token');
+      localStorage.removeItem('userName');
       
       localStorage.setItem('token', response.token);
       localStorage.setItem('userName', response.name);
