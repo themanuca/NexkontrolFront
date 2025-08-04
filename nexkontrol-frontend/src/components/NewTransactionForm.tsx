@@ -1,7 +1,7 @@
 // src/components/NewTransactionForm.tsx
 import React, { useEffect, useState } from "react";
 import { Button } from "../components/ui/button";
-import { TrendingDown, TrendingUp } from "lucide-react";
+import { TrendingDown, TrendingUp, AlertCircle, CheckCircle } from "lucide-react";
 import { DialogClose } from "../components/ui/dialog";
 import type { Account } from "../types/Account";
 import { useToast } from "../Context/ToastContext";
@@ -14,6 +14,15 @@ interface Props {
   onClose: () => void;
   isOpen: boolean;
   editingTransaction?: any; // Transação sendo editada (se houver)
+}
+
+interface ValidationErrors {
+  [key: string]: string | undefined;
+  amount?: string;
+  description?: string;
+  categoryId?: string;
+  accountId?: string;
+  date?: string;
 }
 
 export default function NewTransactionForm({ onSuccess, onClose, isOpen, editingTransaction }: Props) {
@@ -34,6 +43,10 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoadingDropdowns, setIsLoadingDropdowns] = useState(false);
   
+  // Estados de validação
+  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  
   const { addToast } = useToast();
   const { createTransaction, updateTransaction } = useTransactions();
   
@@ -43,6 +56,115 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
   const [valueAccount, setIsValueAccount] = useState("");
   const [isNewAccount, setIsNewAccount] = useState(false);
   const [isNewAccountType, setIsNewAccountType] = useState<number>(0);
+
+  // Função de validação
+  const validateField = (field: string, value: any): string | undefined => {
+    switch (field) {
+      case 'amount':
+        if (!value || value <= 0) return 'Valor deve ser maior que zero';
+        if (isNaN(value)) return 'Valor deve ser um número válido';
+        break;
+      case 'description':
+        if (!value || value.trim().length < 3) return 'Descrição deve ter pelo menos 3 caracteres';
+        break;
+      case 'categoryId':
+        if (!value) return 'Selecione uma categoria';
+        break;
+      case 'accountId':
+        if (!value) return 'Selecione uma conta';
+        break;
+      case 'date':
+        if (!value) return 'Selecione uma data';
+        const selectedDate = new Date(value);
+        const today = new Date();
+        if (selectedDate > today) return 'Data não pode ser futura';
+        break;
+    }
+    return undefined;
+  };
+
+  // Validar campo quando perde o foco
+  const handleBlur = (field: string, value: any) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+    const error = validateField(field, value);
+    setErrors(prev => ({ ...prev, [field]: error }));
+  };
+
+  // Validar formulário completo
+  const validateForm = (): boolean => {
+    const newErrors: ValidationErrors = {};
+    
+    newErrors.amount = validateField('amount', parseFloat(amount));
+    newErrors.description = validateField('description', description);
+    newErrors.categoryId = validateField('categoryId', categoryId);
+    newErrors.accountId = validateField('accountId', accountId);
+    newErrors.date = validateField('date', date);
+
+    setErrors(newErrors);
+    return !Object.values(newErrors).some(error => error);
+  };
+
+  // Componente de campo com validação
+  const FormField = ({ 
+    label, 
+    field, 
+    value, 
+    onChange, 
+    type = "text", 
+    placeholder = "", 
+    required = false,
+    children 
+  }: {
+    label: string;
+    field: string;
+    value: any;
+    onChange: (value: any) => void;
+    type?: string;
+    placeholder?: string;
+    required?: boolean;
+    children?: React.ReactNode;
+  }) => {
+    const hasError = touched[field] && errors[field];
+    const isValid = touched[field] && !errors[field] && value;
+
+    return (
+      <div>
+        <label htmlFor={field} className="block text-sm font-medium text-gray-700 mb-1 dark:text-white">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+        {children || (
+          <input
+            type={type}
+            id={field}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onBlur={() => handleBlur(field, value)}
+            placeholder={placeholder}
+            className={`w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+              hasError 
+                ? 'border-red-500 bg-red-50' 
+                : isValid 
+                ? 'border-green-500 bg-green-50' 
+                : 'border-gray-300'
+            }`}
+            required={required}
+          />
+        )}
+        {hasError && (
+          <div className="flex items-center gap-1 mt-1 text-red-600 text-sm">
+            <AlertCircle className="w-4 h-4" />
+            {errors[field]}
+          </div>
+        )}
+        {isValid && (
+          <div className="flex items-center gap-1 mt-1 text-green-600 text-sm">
+            <CheckCircle className="w-4 h-4" />
+            Válido
+          </div>
+        )}
+      </div>
+    );
+  };
 
   // Preencher formulário quando estiver editando
   useEffect(() => {
@@ -74,6 +196,8 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
       setIsValueAccount("");
       setIsNewAccount(false);
       setIsNewAccountType(0);
+      setErrors({});
+      setTouched({});
     }
   }, [editingTransaction, isOpen]);
 
@@ -114,9 +238,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
         type: isNewAccountType
       };
       try {
-        console.log('Criando conta:', accountdto);
         const result = await apiService.createAccount(accountdto);
-        console.log('Conta criada, ID retornado:', result);
         setAccountId(result);
         setIsNewAccount(false);
         setIsValueAccount("");
@@ -137,9 +259,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
   async function ValidCreateCategory(): Promise<boolean> {
     if (isNewCategoruy && valorCategoria.length > 0) {
       try {
-        console.log('Criando categoria:', valorCategoria);
         const result = await apiService.createCategory(valorCategoria);
-        console.log('Categoria criada, ID retornado:', result);
         setCategoryId(result);
         setIsNewCategoruy(false);
         setValorCategoria("");
@@ -159,6 +279,22 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    
+    // Marcar todos os campos como tocados
+    setTouched({
+      amount: true,
+      description: true,
+      categoryId: true,
+      accountId: true,
+      date: true
+    });
+
+    // Validar formulário
+    if (!validateForm()) {
+      addToast("Por favor, corrija os erros no formulário", "error");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -196,8 +332,6 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
         notes: notes || undefined,
         recurrenceInterval: isRecurring ? recurrenceInterval : undefined,
       };
-
-      console.log('Dados sendo enviados:', data);
 
       if (editingTransaction) {
         await updateTransaction(editingTransaction.id, data);
@@ -246,35 +380,29 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
         </button>
       </div>
 
-      <div>
-        <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1 dark:text-white">Valor</label>
-        <input
-          type="number"
-          id="amount"
-          step="0.01"
-          placeholder="0,00"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-lg font-semibold"
-          required
-        />
-      </div>
+      <FormField
+        label="Valor"
+        field="amount"
+        value={amount}
+        onChange={setAmount}
+        type="number"
+        placeholder="0,00"
+        required
+      />
+
+      <FormField
+        label="Descrição"
+        field="description"
+        value={description}
+        onChange={setDescription}
+        placeholder="Ex: Almoço no restaurante X"
+        required
+      />
 
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1 dark:text-white">Descrição</label>
-        <input
-          type="text"
-          id="description"
-          placeholder="Ex: Almoço no restaurante X"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-          required
-        />
-      </div>
-
-      <div>
-        <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-1 dark:text-white">Categoria</label>
+        <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-1 dark:text-white">
+          Categoria <span className="text-red-500">*</span>
+        </label>
         <button 
           type="button" 
           onClick={handlerNewCategory} 
@@ -288,7 +416,14 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
             id="categoryId"
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
-            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700"
+            onBlur={() => handleBlur('categoryId', categoryId)}
+            className={`w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+              touched.categoryId && errors.categoryId 
+                ? 'border-red-500 bg-red-50' 
+                : touched.categoryId && !errors.categoryId && categoryId
+                ? 'border-green-500 bg-green-50' 
+                : 'border-gray-300'
+            }`}
             required
             disabled={isLoadingDropdowns}
           >
@@ -302,14 +437,22 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
             type="text" 
             value={valorCategoria} 
             onChange={e => setValorCategoria(e.target.value)} 
-            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700"
+            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="Nome da categoria"
           />
+        )}
+        {touched.categoryId && errors.categoryId && (
+          <div className="flex items-center gap-1 mt-1 text-red-600 text-sm">
+            <AlertCircle className="w-4 h-4" />
+            {errors.categoryId}
+          </div>
         )}
       </div>
 
       <div>
-        <label htmlFor="accountId" className="block text-medium font-medium text-gray-700 mb-1 dark:text-white">Conta</label>
+        <label htmlFor="accountId" className="block text-sm font-medium text-gray-700 mb-1 dark:text-white">
+          Conta <span className="text-red-500">*</span>
+        </label>
         <button 
           type="button" 
           disabled={isNewAccount} 
@@ -323,7 +466,14 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
             id="accountId"
             value={accountId}
             onChange={(e) => setAccountId(e.target.value)}
-            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700"
+            onBlur={() => handleBlur('accountId', accountId)}
+            className={`w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+              touched.accountId && errors.accountId 
+                ? 'border-red-500 bg-red-50' 
+                : touched.accountId && !errors.accountId && accountId
+                ? 'border-green-500 bg-green-50' 
+                : 'border-gray-300'
+            }`}
             required
             disabled={isLoadingDropdowns}
           >
@@ -339,13 +489,13 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
               placeholder="Nome da Conta" 
               value={valueAccount} 
               onChange={e => setIsValueAccount(e.target.value)} 
-              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700"
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
             <select
               id="accountType"
               value={isNewAccountType}
               onChange={(e) => setIsNewAccountType(parseInt(e.target.value))}
-              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700"
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               required={valueAccount.length > 0}
             >
               <option value="">Selecione o tipo:</option>
@@ -356,19 +506,22 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
             </select>
           </div>
         )}
+        {touched.accountId && errors.accountId && (
+          <div className="flex items-center gap-1 mt-1 text-red-600 text-sm">
+            <AlertCircle className="w-4 h-4" />
+            {errors.accountId}
+          </div>
+        )}
       </div>
 
-      <div>
-        <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1 dark:text-white">Data</label>
-        <input
-          type="date"
-          id="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-          required
-        />
-      </div>
+      <FormField
+        label="Data"
+        field="date"
+        value={date}
+        onChange={setDate}
+        type="date"
+        required
+      />
 
       <div>
         <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1 dark:text-white">Observações (opcional)</label>
@@ -376,7 +529,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
           id="notes"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+          className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           rows={3}
           placeholder="Observações adicionais..."
         />
@@ -400,7 +553,7 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
             id="recurrenceInterval"
             value={recurrenceInterval ?? ""}
             onChange={(e) => setRecurrenceInterval(parseInt(e.target.value) || undefined)}
-            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700"
+            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             required={isRecurring}
           >
             <option value="">Selecione o Intervalo</option>
@@ -414,16 +567,16 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
 
       <div>
         <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1 dark:text-white">Status</label>
-                 <select
-           id="status"
-           value={status}
-           onChange={(e) => setStatus(parseInt(e.target.value) as TransactionStatus)}
-           className="w-full border border-gray-300 p-3 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700"
-           required
-         >
-           <option value={TransactionStatus.PAID}>Concluída</option>
-           <option value={TransactionStatus.PENDING}>Pendente</option>
-         </select>
+        <select
+          id="status"
+          value={status}
+          onChange={(e) => setStatus(parseInt(e.target.value) as TransactionStatus)}
+          className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          required
+        >
+          <option value={TransactionStatus.PAID}>Concluída</option>
+          <option value={TransactionStatus.PENDING}>Pendente</option>
+        </select>
       </div>
 
       <div className="flex justify-end gap-3 pt-4">
@@ -433,8 +586,16 @@ export default function NewTransactionForm({ onSuccess, onClose, isOpen, editing
         <Button
           type="submit"
           disabled={isSubmitting}
+          className="min-w-[120px]"
         >
-          {isSubmitting ? "Salvando..." : (editingTransaction ? "Atualizar Transação" : "Salvar Transação")}
+          {isSubmitting ? (
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              Salvando...
+            </div>
+          ) : (
+            editingTransaction ? "Atualizar Transação" : "Salvar Transação"
+          )}
         </Button>
       </div>
     </form>

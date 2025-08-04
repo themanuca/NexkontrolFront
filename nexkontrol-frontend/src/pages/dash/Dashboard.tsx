@@ -1,6 +1,6 @@
 // src/pages/Dashboard.tsx
 import { useState } from "react";
-import { LogOut, PlusCircle, TrendingDown, TrendingUp, Wallet, RefreshCw } from "lucide-react";
+import { LogOut, PlusCircle, TrendingDown, TrendingUp, Wallet, RefreshCw, BarChart3 } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "../../components/ui/dialog";
 import { subDays, format } from "date-fns";
@@ -11,6 +11,7 @@ import TransactionFilters from "../../components/TransactionFilters";
 import TransactionChart from "../../components/charts/TransactionChart";
 import NewTransactionForm from "../../components/NewTransactionForm";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
+import ReportsExport from "../../components/ReportsExport";
 import { useAuthContext } from "../../Context/AuthContext";
 import { useTransactions } from "../../hooks/useTransactions";
 import { SkeletonCard, SkeletonTable } from "../../components/ui/Skeleton";
@@ -22,6 +23,7 @@ export default function Dashboard() {
     isOpen: false,
     transactionId: null
   });
+  const [showReports, setShowReports] = useState(false);
   const { user, logout } = useAuthContext();
   const { 
     totals, 
@@ -85,12 +87,16 @@ export default function Dashboard() {
 
   return (
     <div>
-      <div className="shadow-md min-w-screen text-lg flex bg-gray-100 justify-between items-center dark:bg-gray-800 p-6 ease-in-out bg-gradient-to-r ">
-        <h2>
-          Olá {user?.name} !
+      <div className="shadow-md w-full text-lg flex bg-gray-100 justify-between items-center dark:bg-gray-800 p-6 ease-in-out bg-gradient-to-r">
+        <h2 className="text-gray-800 dark:text-gray-200">
+          Olá {user?.name}!
         </h2>
-        <button onClick={logout} className="flex shadow-md transition-all duration-200 ease-in-out bg-gradient-to-r">
+        <button 
+          onClick={logout} 
+          className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200 ease-in-out shadow-md"
+        >
           <LogOut className="w-5 h-5"/>
+          Sair
         </button>
       </div>    
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6 md:p-10 font-sans">
@@ -99,40 +105,48 @@ export default function Dashboard() {
           <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-50">
             Painel de Controle
           </h1>
-          <div className="flex gap-3">
-            <Button 
-              onClick={fetchTransactions}
-              disabled={isLoading}
-              className="flex items-center gap-2 px-4 py-3 rounded-xl shadow-md transition-all duration-200 ease-in-out bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white transform hover:scale-105"
-            >
-              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-              {isLoading ? 'Carregando...' : 'Atualizar'}
-            </Button>
-            
-            <Dialog open={isModalOpen} onOpenChange={(open) => {
-              setIsModalOpen(open);
-              if (!open) {
-                setEditingTransaction(null);
-              }
-            }}>
-              <DialogTrigger asChild>
-                <Button className="flex items-center gap-2 px-6 py-3 rounded-xl shadow-md transition-all duration-200 ease-in-out bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white transform hover:scale-105">
-                  <PlusCircle className="w-5 h-5" /> Nova Transação
-                </Button>
-              </DialogTrigger>
-                          <DialogContent>
-                <NewTransactionForm
-                  onSuccess={handleTransactionSuccess}
-                  onClose={() => {
-                    setIsModalOpen(false);
-                    setEditingTransaction(null);
-                  }}
-                  isOpen={isModalOpen}
-                  editingTransaction={editingTransaction}
-                />
-              </DialogContent>
-            </Dialog>
-          </div>
+                     <div className="flex gap-3">
+             <Button 
+               onClick={fetchTransactions}
+               disabled={isLoading}
+               className="flex items-center gap-2 px-4 py-3 rounded-xl shadow-md transition-all duration-200 ease-in-out bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white transform hover:scale-105"
+             >
+               <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+               {isLoading ? 'Carregando...' : 'Atualizar'}
+             </Button>
+             
+             <Button
+               onClick={() => setShowReports(!showReports)}
+               className="flex items-center gap-2 px-4 py-3 rounded-xl shadow-md transition-all duration-200 ease-in-out bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 text-white transform hover:scale-105"
+             >
+               <BarChart3 className="w-5 h-5" />
+               {showReports ? 'Ocultar Relatórios' : 'Relatórios'}
+             </Button>
+             
+             <Dialog open={isModalOpen} onOpenChange={(open) => {
+               setIsModalOpen(open);
+               if (!open) {
+                 setEditingTransaction(null);
+               }
+             }}>
+               <DialogTrigger asChild>
+                 <Button className="flex items-center gap-2 px-6 py-3 rounded-xl shadow-md transition-all duration-200 ease-in-out bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white transform hover:scale-105">
+                   <PlusCircle className="w-5 h-5" /> Nova Transação
+                 </Button>
+               </DialogTrigger>
+               <DialogContent>
+                 <NewTransactionForm
+                   onSuccess={handleTransactionSuccess}
+                   onClose={() => {
+                     setIsModalOpen(false);
+                     setEditingTransaction(null);
+                   }}
+                   isOpen={isModalOpen}
+                   editingTransaction={editingTransaction}
+                 />
+               </DialogContent>
+             </Dialog>
+           </div>
         </header>
 
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
@@ -168,20 +182,30 @@ export default function Dashboard() {
           )}
         </section>
 
-        {/* Gráficos */}
-        <section className="mb-10">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-50 mb-6">
-            Análise Visual
-          </h2>
-          {isLoading ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <SkeletonCard />
-              <SkeletonCard />
-            </div>
-          ) : (
-            <TransactionChart transactions={filteredTransactions} />
-          )}
-        </section>
+                 {/* Relatórios */}
+         {showReports && (
+           <section className="mb-10">
+             <ReportsExport 
+               transactions={filteredTransactions} 
+               isLoading={isLoading} 
+             />
+           </section>
+         )}
+
+         {/* Gráficos */}
+         <section className="mb-10">
+           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-50 mb-6">
+             Análise Visual
+           </h2>
+           {isLoading ? (
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+               <SkeletonCard />
+               <SkeletonCard />
+             </div>
+           ) : (
+             <TransactionChart transactions={filteredTransactions} />
+           )}
+         </section>
 
         <section>
           {/* Filtros */}
@@ -245,16 +269,17 @@ export default function Dashboard() {
     </div>
 
     {/* Modal de Confirmação de Exclusão */}
-    <ConfirmDialog
-      isOpen={deleteDialog.isOpen}
-      onClose={() => setDeleteDialog({ isOpen: false, transactionId: null })}
-      onConfirm={confirmDelete}
-      title="Excluir Transação"
-      message="Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita."
-      confirmText="Excluir"
-      cancelText="Cancelar"
-      type="danger"
-    />
+         <ConfirmDialog
+       isOpen={deleteDialog.isOpen}
+       onClose={() => setDeleteDialog({ isOpen: false, transactionId: null })}
+       onConfirm={confirmDelete}
+       title="Excluir Transação"
+       message="Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita."
+       confirmText="Excluir"
+       cancelText="Cancelar"
+       type="danger"
+       icon="delete"
+     />
   </div>
   );
 }

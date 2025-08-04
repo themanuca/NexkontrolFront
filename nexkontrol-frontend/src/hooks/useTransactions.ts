@@ -107,9 +107,6 @@ export const useTransactions = (): UseTransactionsReturn => {
       const fetchedTransactions = await apiService.getTransactions();
       
       // Normalizar dados da API
-      console.log('Dados recebidos da API:', fetchedTransactions);
-      
-      // Normalizar dados da API
       const normalizedTransactions = fetchedTransactions.map((t: any) => ({
         ...t,
         id: t.id || t.Id,
@@ -126,8 +123,6 @@ export const useTransactions = (): UseTransactionsReturn => {
         isRecurring: Boolean(t.isRecurring || t.IsRecurring),
         notes: t.notes || t.Notes || '',
       }));
-
-      console.log('Dados normalizados:', normalizedTransactions);
 
       setTransactions(normalizedTransactions);
     } catch (error: any) {

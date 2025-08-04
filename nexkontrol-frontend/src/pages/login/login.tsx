@@ -63,7 +63,6 @@ export default function Login() {
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isLoading ? "Entrando..." : "Entrar"} {/* Texto do botão muda */}
         </button>
-
         <p className="text-sm text-center mt-4 text-gray-600 dark:text-gray-300">
           Ainda não tem conta?{" "}
           <Link to="/register" className="text-blue-600 dark:text-blue-400 hover:underline"> {/* Cor do link ajustada */}
