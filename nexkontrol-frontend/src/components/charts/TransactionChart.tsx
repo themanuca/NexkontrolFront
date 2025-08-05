@@ -51,14 +51,14 @@ const TransactionChart: React.FC<TransactionChartProps> = ({ transactions }) => 
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
       {/* Gráfico de Entradas */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">
+      <Card className="p-3 sm:p-6">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3 sm:mb-4">
           Distribuição de Entradas
         </h3>
         {incomeData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <Pie
                 data={incomeData}
@@ -79,19 +79,19 @@ const TransactionChart: React.FC<TransactionChartProps> = ({ transactions }) => 
             </PieChart>
           </ResponsiveContainer>
         ) : (
-          <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">
+          <div className="flex items-center justify-center h-48 sm:h-64 text-gray-500 dark:text-gray-400 text-sm sm:text-base">
             Nenhuma entrada registrada
           </div>
         )}
       </Card>
 
       {/* Gráfico de Saídas */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">
+      <Card className="p-3 sm:p-6">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3 sm:mb-4">
           Distribuição de Saídas
         </h3>
         {expenseData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <Pie
                 data={expenseData}
@@ -112,7 +112,7 @@ const TransactionChart: React.FC<TransactionChartProps> = ({ transactions }) => 
             </PieChart>
           </ResponsiveContainer>
         ) : (
-          <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">
+          <div className="flex items-center justify-center h-48 sm:h-64 text-gray-500 dark:text-gray-400 text-sm sm:text-base">
             Nenhuma saída registrada
           </div>
         )}

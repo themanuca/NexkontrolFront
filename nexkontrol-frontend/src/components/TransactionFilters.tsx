@@ -26,10 +26,10 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
   const hasActiveFilters = searchTerm || selectedCategory !== 'all' || selectedType !== 'all';
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mb-6">
-      <div className="flex flex-col lg:flex-row gap-4">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-3 sm:p-4 mb-6">
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
         {/* Busca */}
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
@@ -37,17 +37,17 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
               placeholder="Buscar transações..."
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
             />
           </div>
         </div>
 
         {/* Filtro por Categoria */}
-        <div className="lg:w-48">
+        <div className="w-full sm:w-48">
           <select
             value={selectedCategory}
             onChange={(e) => onCategoryChange(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
           >
             <option value="all">Todas as categorias</option>
             {categories.map((category) => (
@@ -59,11 +59,11 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
         </div>
 
         {/* Filtro por Tipo */}
-        <div className="lg:w-40">
+        <div className="w-full sm:w-40">
           <select
             value={selectedType}
             onChange={(e) => onTypeChange(e.target.value as TransactionType | 'all')}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
           >
             <option value="all">Todos os tipos</option>
             <option value={TransactionType.INCOME}>Entradas</option>
@@ -75,10 +75,11 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
         {hasActiveFilters && (
           <button
             onClick={onClearFilters}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-colors"
+            className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-colors rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
           >
             <X className="w-4 h-4" />
-            Limpar
+            <span className="hidden sm:inline">Limpar</span>
+            <span className="sm:hidden">Limpar</span>
           </button>
         )}
       </div>

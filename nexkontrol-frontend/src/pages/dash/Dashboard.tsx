@@ -87,69 +87,77 @@ export default function Dashboard() {
 
   return (
     <div>
-      <div className="shadow-md w-full text-lg flex bg-gray-100 justify-between items-center dark:bg-gray-800 p-6 ease-in-out bg-gradient-to-r">
-        <h2 className="text-gray-800 dark:text-gray-200">
+      <div className="shadow-md w-full text-base sm:text-lg flex bg-gray-100 justify-between items-center dark:bg-gray-800 p-4 sm:p-6 ease-in-out bg-gradient-to-r">
+        <h2 className="text-gray-800 dark:text-gray-200 text-sm sm:text-base lg:text-lg truncate">
           Olá {user?.name}!
         </h2>
         <button 
           onClick={logout} 
-          className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200 ease-in-out shadow-md"
+          className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200 ease-in-out shadow-md text-sm sm:text-base"
         >
-          <LogOut className="w-5 h-5"/>
-          Sair
+          <LogOut className="w-4 h-4 sm:w-5 sm:h-5"/>
+          <span className="hidden sm:inline">Sair</span>
+          <span className="sm:hidden">Sair</span>
         </button>
       </div>    
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6 md:p-10 font-sans">
       <div className="max-w-6xl mx-auto">
-        <header className="md:flex md:justify-between items-center mb-10">
-          <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-50">
-            Painel de Controle
-          </h1>
-                     <div className="flex gap-3">
-             <Button 
-               onClick={fetchTransactions}
-               disabled={isLoading}
-               className="flex items-center gap-2 px-4 py-3 rounded-xl shadow-md transition-all duration-200 ease-in-out bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white transform hover:scale-105"
-             >
-               <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-               {isLoading ? 'Carregando...' : 'Atualizar'}
-             </Button>
-             
-             <Button
-               onClick={() => setShowReports(!showReports)}
-               className="flex items-center gap-2 px-4 py-3 rounded-xl shadow-md transition-all duration-200 ease-in-out bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 text-white transform hover:scale-105"
-             >
-               <BarChart3 className="w-5 h-5" />
-               {showReports ? 'Ocultar Relatórios' : 'Relatórios'}
-             </Button>
-             
-             <Dialog open={isModalOpen} onOpenChange={(open) => {
-               setIsModalOpen(open);
-               if (!open) {
-                 setEditingTransaction(null);
-               }
-             }}>
-               <DialogTrigger asChild>
-                 <Button className="flex items-center gap-2 px-6 py-3 rounded-xl shadow-md transition-all duration-200 ease-in-out bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white transform hover:scale-105">
-                   <PlusCircle className="w-5 h-5" /> Nova Transação
-                 </Button>
-               </DialogTrigger>
-               <DialogContent>
-                 <NewTransactionForm
-                   onSuccess={handleTransactionSuccess}
-                   onClose={() => {
-                     setIsModalOpen(false);
-                     setEditingTransaction(null);
-                   }}
-                   isOpen={isModalOpen}
-                   editingTransaction={editingTransaction}
-                 />
-               </DialogContent>
-             </Dialog>
-           </div>
+        <header className="mb-10">
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-gray-50">
+              Painel de Controle
+            </h1>
+            
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <Button 
+                onClick={fetchTransactions}
+                disabled={isLoading}
+                className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-3 rounded-xl shadow-md transition-all duration-200 ease-in-out bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white transform hover:scale-105 text-sm sm:text-base"
+              >
+                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">{isLoading ? 'Carregando...' : 'Atualizar'}</span>
+                <span className="sm:hidden">{isLoading ? '...' : 'Atualizar'}</span>
+              </Button>
+              
+              <Button
+                onClick={() => setShowReports(!showReports)}
+                className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-3 rounded-xl shadow-md transition-all duration-200 ease-in-out bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 text-white transform hover:scale-105 text-sm sm:text-base"
+              >
+                <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">{showReports ? 'Ocultar Relatórios' : 'Relatórios'}</span>
+                <span className="sm:hidden">{showReports ? 'Ocultar' : 'Relatórios'}</span>
+              </Button>
+              
+              <Dialog open={isModalOpen} onOpenChange={(open) => {
+                setIsModalOpen(open);
+                if (!open) {
+                  setEditingTransaction(null);
+                }
+              }}>
+                <DialogTrigger asChild>
+                  <Button className="flex items-center justify-center gap-2 px-3 sm:px-4 lg:px-6 py-2 sm:py-3 rounded-xl shadow-md transition-all duration-200 ease-in-out bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white transform hover:scale-105 text-sm sm:text-base">
+                    <PlusCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="hidden sm:inline">Nova Transação</span>
+                    <span className="sm:hidden">Nova</span>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <NewTransactionForm
+                    onSuccess={handleTransactionSuccess}
+                    onClose={() => {
+                      setIsModalOpen(false);
+                      setEditingTransaction(null);
+                    }}
+                    isOpen={isModalOpen}
+                    editingTransaction={editingTransaction}
+                  />
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
         </header>
 
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-10">
           {isLoading ? (
             <>
               <SkeletonCard />
@@ -220,25 +228,25 @@ export default function Dashboard() {
             onClearFilters={clearFilters}
           />
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Data Inicial</label>
+          <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3 sm:gap-4 mb-4">
+            <div className="w-full sm:w-auto">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data Inicial</label>
               <input
                 type="date"
                 defaultValue={initialStartDate}
                 onChange={(e) => setDateRange(e.target.value, initialEndDate)}
-                className="px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-500"
+                className="w-full sm:w-auto px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-500 text-sm sm:text-base"
                 disabled={isLoading}
               />
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Data Final</label>
+            <div className="w-full sm:w-auto">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data Final</label>
               <input
                 type="date"
                 defaultValue={initialEndDate}
                 onChange={(e) => setDateRange(initialStartDate, e.target.value)}
-                className="px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-500"
+                className="w-full sm:w-auto px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-500 text-sm sm:text-base"
                 disabled={isLoading}
               />
             </div>
