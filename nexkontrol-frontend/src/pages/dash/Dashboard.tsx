@@ -47,7 +47,6 @@ export default function Dashboard() {
 
   // Hook de IA
   const {
-    analysis,
     isAnalyzing,
     insights,
     chatMessages,
@@ -117,10 +116,7 @@ export default function Dashboard() {
   };
 
   const handleChatMessage = async (message: string) => {
-    await sendChatMessage(message, {
-      recentTransactions: filteredTransactions.slice(0, 10),
-      currentBalance: totals.balance,
-    });
+    await sendChatMessage(message);
   };
 
   return (
