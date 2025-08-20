@@ -8,19 +8,34 @@ import type {
 import type { Transaction } from '../types/Transaction';
 
 export function useAI() {
-  const [analysis, setAnalysis] = useState<AIAnalysis | null>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [insights, setInsights] = useState<AIInsight[]>([]);
+  // const [analysis, setAnalysis] = useState<AIAnalysis | null>(null);
+  // const [isAnalyzing, setIsAnalyzing] = useState(false);
+  // const [insights, setInsights] = useState<AIInsight[]>([]);
+  // const [chatMessages, setChatMessages] = useState<string>("");
+  // const [isChatLoading, setIsChatLoading] = useState(false);
+  // const [error, setError] = useState<string | null>(null);
+  // const [isAIEnabled, setIsAIEnabled] = useState(true);
+
+  const [analysis] = useState<AIAnalysis | null>(null);
+  const [isAnalyzing] = useState(false);
+  const [insights] = useState<AIInsight[]>([]);
   const [chatMessages, setChatMessages] = useState<string>("");
-  const [isChatLoading, setIsChatLoading] = useState(false);
+  const [isChatLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isAIEnabled, setIsAIEnabled] = useState(true);
+
 
   // Análise de transações
   const analyzeTransactions = useCallback(async (
     transactions: Transaction[], 
     request?: AIAnalysisRequest
   ) => {
+    if(transactions){
+
+    }
+    else if(request){
+
+    }
     // if (!isAIEnabled) return;
 
     // setIsAnalyzing(true);
@@ -61,7 +76,7 @@ export function useAI() {
   }, [isAIEnabled]);
 
   // Chat com IA
-  const sendChatMessage = useCallback(async (message: string, context?: any) => {
+  const sendChatMessage = useCallback(async (message: string) => {
     if (!isAIEnabled || message.length == 0) {
       return;
     }

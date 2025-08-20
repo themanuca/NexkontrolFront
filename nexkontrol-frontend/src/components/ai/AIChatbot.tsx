@@ -40,12 +40,12 @@ export default function AIChatbot({ messages, isChatLoading, onSendMessage, onCl
     setIsOpen(!isOpen);
   };
 
-  const formatTime = (timestamp: string) => {
-    return new Date(timestamp).toLocaleTimeString('pt-BR', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  // const formatTime = (timestamp: string) => {
+  //   return new Date(timestamp).toLocaleTimeString('pt-BR', {
+  //     hour: '2-digit',
+  //     minute: '2-digit',
+  //   });
+  // };
 
   if (!isOpen) {
     return (

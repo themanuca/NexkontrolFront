@@ -3,7 +3,6 @@ import { TrendingUp, TrendingDown, AlertTriangle, Lightbulb, Target, BarChart3 }
 import { Card } from '../ui/card';
 import { CardContent } from '../ui/cardContent';
 import type { AIInsight } from '../../types/AI';
-import { useTransactions } from '../../hooks/useTransactions';
 import { useAI } from '../../hooks/useAI';
 
 interface AIInsightsProps {
@@ -45,10 +44,10 @@ const getSeverityColor = (severity: AIInsight['severity']) => {
 
 export default function AIInsights({ insights, isAnalyzing = false, onRefresh }: AIInsightsProps) {
 
-  const { 
-  totals, 
-  filteredTransactions, 
-  } = useTransactions();
+  // const { 
+  // totals, 
+  // filteredTransactions, 
+  // } = useTransactions();
 
   // Hook de IA
   const {
@@ -70,10 +69,7 @@ export default function AIInsights({ insights, isAnalyzing = false, onRefresh }:
     }
     }
   const handleChatMessage = async (message: string) => {
-    await sendChatMessage(message, {
-      recentTransactions: filteredTransactions.slice(0, 10),
-      currentBalance: totals.balance,
-    });
+    await sendChatMessage(message);
   };
 
 
