@@ -1,6 +1,6 @@
 // src/pages/Dashboard.tsx
 import { useState } from "react";
-import { LogOut, PlusCircle, TrendingDown, TrendingUp, Wallet, RefreshCw, BarChart3 } from "lucide-react";
+import { LogOut, PlusCircle, TrendingDown, TrendingUp, Wallet, RefreshCw, BarChart3, Brain } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "../../components/ui/dialog";
 import { subDays, format } from "date-fns";
@@ -12,8 +12,11 @@ import TransactionChart from "../../components/charts/TransactionChart";
 import NewTransactionForm from "../../components/NewTransactionForm";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import ReportsExport from "../../components/ReportsExport";
+import AIInsights from "../../components/ai/AIInsights";
+import AIChatbot from "../../components/ai/AIChatbot";
 import { useAuthContext } from "../../Context/AuthContext";
 import { useTransactions } from "../../hooks/useTransactions";
+import { useAI } from "../../hooks/useAI";
 import { SkeletonCard, SkeletonTable } from "../../components/ui/Skeleton";
 
 export default function Dashboard() {
@@ -41,6 +44,20 @@ export default function Dashboard() {
     setSelectedType,
     clearFilters,
   } = useTransactions();
+
+  // Hook de IA
+  const {
+    analysis,
+    isAnalyzing,
+    insights,
+    chatMessages,
+    isChatLoading,
+    isAIEnabled,
+    analyzeTransactions,
+    sendChatMessage,
+    clearChat,
+    toggleAI,
+  } = useAI();
 
   // Configurar data inicial (últimos 30 dias)
   const today = new Date();
@@ -85,6 +102,27 @@ export default function Dashboard() {
     new Set(filteredTransactions.map(t => t.categoryName))
   ).map(name => ({ id: name, categoryName: name }));
 
+  // Handlers de IA
+  const handleAIAnalysis = async () => {
+    debugger
+    if (filteredTransactions.length > 0) {
+      await analyzeTransactions(filteredTransactions, {
+        dateRange: {
+          startDate: initialStartDate,
+          endDate: initialEndDate,
+        },
+        analysisType: 'full',
+      });
+    }
+  };
+
+  const handleChatMessage = async (message: string) => {
+    await sendChatMessage(message, {
+      recentTransactions: filteredTransactions.slice(0, 10),
+      currentBalance: totals.balance,
+    });
+  };
+
   return (
     <div>
       <div className="shadow-md w-full text-base sm:text-lg flex bg-gray-100 justify-between items-center dark:bg-gray-800 p-4 sm:p-6 ease-in-out bg-gradient-to-r">
@@ -126,6 +164,16 @@ export default function Dashboard() {
                 <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5" />
                 <span className="hidden sm:inline">{showReports ? 'Ocultar Relatórios' : 'Relatórios'}</span>
                 <span className="sm:hidden">{showReports ? 'Ocultar' : 'Relatórios'}</span>
+              </Button>
+
+              <Button
+                onClick={handleAIAnalysis}
+                disabled={true}
+                className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-3 rounded-xl shadow-md transition-all duration-200 ease-in-out bg-gradient-to-r from-orange-600 to-red-700 hover:from-orange-700 hover:to-red-800 text-white transform hover:scale-105 text-sm sm:text-base"
+              >
+                <Brain className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">{isAnalyzing ? 'Analisando...' : 'Análise IA'}</span>
+                <span className="sm:hidden">{isAnalyzing ? '...' : 'IA'}</span>
               </Button>
               
               <Dialog open={isModalOpen} onOpenChange={(open) => {
@@ -265,29 +313,75 @@ export default function Dashboard() {
           </div>
         </section>
 
-        <section className="mt-10 bg-gray-100 dark:bg-gray-900 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-800">
-          <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4">
-            Insights do NexKontrol (Em Breve)
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400">
-            Nossa inteligência artificial analisará seus dados para oferecer sugestões personalizadas e relatórios inteligentes. Fique atento!
-          </p>
-        </section>
+        {/* Seção de IA */}
+        {isAIEnabled && (
+          <section className="mt-10">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-50">
+                Análise Inteligente
+              </h2>
+              <button
+                onClick={toggleAI}
+                className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+              >
+                Desativar IA
+              </button>
+            </div>
+            
+            <AIInsights 
+              insights={insights}
+              isAnalyzing={isAnalyzing}
+              onRefresh={handleAIAnalysis}
+            />
+          </section>
+        )}
+
+        {/* Seção de IA Desabilitada */}
+        {!isAIEnabled && (
+          <section className="mt-10 bg-gray-100 dark:bg-gray-900 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-800">
+            <div className="text-center">
+              <Brain className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                IA Desabilitada
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                Ative a inteligência artificial para receber insights personalizados sobre suas finanças.
+              </p>
+              <button
+                onClick={toggleAI}
+                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Brain className="w-4 h-4 mr-2" />
+                Ativar IA
+              </button>
+            </div>
+          </section>
+        )}
       </div>
     </div>
 
     {/* Modal de Confirmação de Exclusão */}
-         <ConfirmDialog
-       isOpen={deleteDialog.isOpen}
-       onClose={() => setDeleteDialog({ isOpen: false, transactionId: null })}
-       onConfirm={confirmDelete}
-       title="Excluir Transação"
-       message="Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita."
-       confirmText="Excluir"
-       cancelText="Cancelar"
-       type="danger"
-       icon="delete"
-     />
+    <ConfirmDialog
+      isOpen={deleteDialog.isOpen}
+      onClose={() => setDeleteDialog({ isOpen: false, transactionId: null })}
+      onConfirm={confirmDelete}
+      title="Excluir Transação"
+      message="Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita."
+      confirmText="Excluir"
+      cancelText="Cancelar"
+      type="danger"
+      icon="delete"
+    />
+
+    {/* Chatbot de IA */}
+    {isAIEnabled && (
+      <AIChatbot
+        messages={chatMessages}
+        isChatLoading={isChatLoading}
+        onSendMessage={handleChatMessage}
+        onClearChat={clearChat}
+      />
+    )}
   </div>
   );
 }

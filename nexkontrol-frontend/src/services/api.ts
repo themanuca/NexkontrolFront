@@ -122,6 +122,22 @@ class ApiService {
       return false;
     }
   }
+
+  // Métodos de IA
+  async analyzeTransactionsWithAI(request: any): Promise<any> {
+    const response: AxiosResponse<any> = await this.api.post('/api/ai/analyze', request);
+    return response.data;
+  }
+
+  async chatWithAI(request: any): Promise<any> {
+    const response: AxiosResponse<any> = await this.api.post('/api/ai/chat', request);
+    return response.data;
+  }
+
+  async getAIInsights(limit: number = 10): Promise<any[]> {
+    const response: AxiosResponse<any[]> = await this.api.get(`/api/ai/insights?limit=${limit}`);
+    return response.data;
+  }
 }
 
 export const apiService = new ApiService(); 

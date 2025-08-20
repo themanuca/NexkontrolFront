@@ -102,7 +102,7 @@ export const useTransactions = (): UseTransactionsReturn => {
   const fetchTransactions = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-
+    
     try {
       const fetchedTransactions = await apiService.getTransactions();
       
