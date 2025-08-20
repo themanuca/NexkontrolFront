@@ -3,9 +3,7 @@ import { aiService } from '../services/ai';
 import type { 
   AIAnalysis, 
   AIInsight, 
-  AIChatMessage, 
   AIAnalysisRequest,
-  AIChatRequest 
 } from '../types/AI';
 import type { Transaction } from '../types/Transaction';
 
@@ -23,43 +21,43 @@ export function useAI() {
     transactions: Transaction[], 
     request?: AIAnalysisRequest
   ) => {
-    if (!isAIEnabled) return;
+    // if (!isAIEnabled) return;
 
-    setIsAnalyzing(true);
-    setError(null);
+    // setIsAnalyzing(true);
+    // setError(null);
 
-    try {
-      // Tentar usar a API de IA primeiro
-      if (request) {
-        const aiAnalysis = await aiService.analyzeTransactions(request);
-        setAnalysis(aiAnalysis);
-        setInsights(aiAnalysis.insights);
-        return aiAnalysis;
-      }
-    } catch (apiError) {
-      console.warn('API de IA não disponível, usando análise local:', apiError);
+    // try {
+    //   // Tentar usar a API de IA primeiro
+    //   if (request) {
+    //     const aiAnalysis = await aiService.analyzeTransactions(request);
+    //     setAnalysis(aiAnalysis);
+    //     setInsights(aiAnalysis.insights);
+    //     return aiAnalysis;
+    //   }
+    // } catch (apiError) {
+    //   console.warn('API de IA não disponível, usando análise local:', apiError);
       
-      // Fallback para análise local
-      const localInsights = aiService.generateBasicInsights(transactions);
-      setInsights(localInsights);
+    //   // Fallback para análise local
+    //   const localInsights = aiService.generateBasicInsights(transactions);
+    //   setInsights(localInsights);
       
-      // Criar análise local
-      const localAnalysis: AIAnalysis = {
-        id: `local-${Date.now()}`,
-        userId: 'local',
-        financialScore: calculateFinancialScore(transactions),
-        summary: generateLocalSummary(transactions),
-        insights: localInsights,
-        recommendations: generateLocalRecommendations(transactions),
-        generatedAt: new Date().toISOString(),
-        dateRange: request?.dateRange,
-      };
+    //   // Criar análise local
+    //   const localAnalysis: AIAnalysis = {
+    //     id: `local-${Date.now()}`,
+    //     userId: 'local',
+    //     financialScore: calculateFinancialScore(transactions),
+    //     summary: generateLocalSummary(transactions),
+    //     insights: localInsights,
+    //     recommendations: generateLocalRecommendations(transactions),
+    //     generatedAt: new Date().toISOString(),
+    //     dateRange: request?.dateRange,
+    //   };
       
-      setAnalysis(localAnalysis);
-      return localAnalysis;
-    } finally {
-      setIsAnalyzing(false);
-    }
+    //   setAnalysis(localAnalysis);
+    //   return localAnalysis;
+    // } finally {
+    //   setIsAnalyzing(false);
+    // }
   }, [isAIEnabled]);
 
   // Chat com IA
@@ -76,19 +74,19 @@ export function useAI() {
 
   // Limpar chat
   const clearChat = useCallback(() => {
-    setChatMessages([]);
+    setChatMessages("");
     setError(null);
   }, []);
 
   // Atualizar insights
-  const refreshInsights = useCallback(async (userId: string) => {
-    try {
-      const newInsights = await aiService.getInsights(userId);
-      setInsights(newInsights);
-    } catch (error) {
-      console.warn('Erro ao atualizar insights:', error);
-    }
-  }, []);
+  // const refreshInsights = useCallback(async (userId: string) => {
+  //   try {
+  //     const newInsights = await aiService.getInsights(userId);
+  //     setInsights(newInsights);
+  //   } catch (error) {
+  //     console.warn('Erro ao atualizar insights:', error);
+  //   }
+  // }, []);
 
   // Toggle IA
   const toggleAI = useCallback(() => {
@@ -96,63 +94,63 @@ export function useAI() {
   }, []);
 
   // Calcular score financeiro local
-  const calculateFinancialScore = (transactions: Transaction[]): number => {
-    const expenses = transactions.filter(t => t.type === 'expense');
-    const income = transactions.filter(t => t.type === 'income');
+  // const calculateFinancialScore = (transactions: Transaction[]): number => {
+  //   const expenses = transactions.filter(t => t.type === 'expense');
+  //   const income = transactions.filter(t => t.type === 'income');
     
-    const totalExpenses = expenses.reduce((sum, t) => sum + t.amount, 0);
-    const totalIncome = income.reduce((sum, t) => sum + t.amount, 0);
+  //   const totalExpenses = expenses.reduce((sum, t) => sum + t.amount, 0);
+  //   const totalIncome = income.reduce((sum, t) => sum + t.amount, 0);
     
-    if (totalIncome === 0) return 0;
+  //   if (totalIncome === 0) return 0;
     
-    const savingsRate = (totalIncome - totalExpenses) / totalIncome;
-    const score = Math.max(0, Math.min(100, savingsRate * 100));
+  //   const savingsRate = (totalIncome - totalExpenses) / totalIncome;
+  //   const score = Math.max(0, Math.min(100, savingsRate * 100));
     
-    return Math.round(score);
-  };
+  //   return Math.round(score);
+  // };
 
-  // Gerar resumo local
-  const generateLocalSummary = (transactions: Transaction[]): string => {
-    const expenses = transactions.filter(t => t.type === 'expense');
-    const income = transactions.filter(t => t.type === 'income');
+  // // Gerar resumo local
+  // const generateLocalSummary = (transactions: Transaction[]): string => {
+  //   const expenses = transactions.filter(t => t.type === 'expense');
+  //   const income = transactions.filter(t => t.type === 'income');
     
-    const totalExpenses = expenses.reduce((sum, t) => sum + t.amount, 0);
-    const totalIncome = income.reduce((sum, t) => sum + t.amount, 0);
-    const balance = totalIncome - totalExpenses;
+  //   const totalExpenses = expenses.reduce((sum, t) => sum + t.amount, 0);
+  //   const totalIncome = income.reduce((sum, t) => sum + t.amount, 0);
+  //   const balance = totalIncome - totalExpenses;
     
-    if (balance > 0) {
-      return `Excelente! Você está com saldo positivo de R$ ${balance.toFixed(2)}. Continue assim!`;
-    } else if (balance === 0) {
-      return 'Seus gastos estão equilibrados com suas receitas. Bom controle financeiro!';
-    } else {
-      return `Atenção: Seus gastos estão R$ ${Math.abs(balance).toFixed(2)} acima das receitas.`;
-    }
-  };
+  //   if (balance > 0) {
+  //     return `Excelente! Você está com saldo positivo de R$ ${balance.toFixed(2)}. Continue assim!`;
+  //   } else if (balance === 0) {
+  //     return 'Seus gastos estão equilibrados com suas receitas. Bom controle financeiro!';
+  //   } else {
+  //     return `Atenção: Seus gastos estão R$ ${Math.abs(balance).toFixed(2)} acima das receitas.`;
+  //   }
+  // };
 
-  // Gerar recomendações locais
-  const generateLocalRecommendations = (transactions: Transaction[]): string[] => {
-    const recommendations: string[] = [];
+  // // Gerar recomendações locais
+  // const generateLocalRecommendations = (transactions: Transaction[]): string[] => {
+  //   const recommendations: string[] = [];
     
-    const expenses = transactions.filter(t => t.type === 'expense');
-    const income = transactions.filter(t => t.type === 'income');
+  //   const expenses = transactions.filter(t => t.type === 'expense');
+  //   const income = transactions.filter(t => t.type === 'income');
     
-    if (expenses.length > income.length * 2) {
-      recommendations.push('Considere reduzir o número de transações de gastos');
-    }
+  //   if (expenses.length > income.length * 2) {
+  //     recommendations.push('Considere reduzir o número de transações de gastos');
+  //   }
     
-    const totalExpenses = expenses.reduce((sum, t) => sum + t.amount, 0);
-    const totalIncome = income.reduce((sum, t) => sum + t.amount, 0);
+  //   const totalExpenses = expenses.reduce((sum, t) => sum + t.amount, 0);
+  //   const totalIncome = income.reduce((sum, t) => sum + t.amount, 0);
     
-    if (totalExpenses > totalIncome * 0.8) {
-      recommendations.push('Tente manter seus gastos abaixo de 80% da sua renda');
-    }
+  //   if (totalExpenses > totalIncome * 0.8) {
+  //     recommendations.push('Tente manter seus gastos abaixo de 80% da sua renda');
+  //   }
     
-    if (recommendations.length === 0) {
-      recommendations.push('Continue monitorando suas finanças regularmente');
-    }
+  //   if (recommendations.length === 0) {
+  //     recommendations.push('Continue monitorando suas finanças regularmente');
+  //   }
     
-    return recommendations;
-  };
+  //   return recommendations;
+  // };
 
   // Valores computados
   const hasInsights = useMemo(() => insights.length > 0, [insights]);
@@ -173,7 +171,7 @@ export function useAI() {
     analyzeTransactions,
     sendChatMessage,
     clearChat,
-    refreshInsights,
+    // refreshInsights,
     toggleAI,
     
     // Computados

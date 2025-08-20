@@ -1,7 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Bot, User, Loader2, Trash  } from 'lucide-react';
-import { Card } from '../ui/card';
-import type { AIChatMessage } from '../../types/AI';
+import { MessageCircle, X, Send, Bot, Loader2, Trash  } from 'lucide-react';
 
 interface AIChatbotProps {
   messages: string;
