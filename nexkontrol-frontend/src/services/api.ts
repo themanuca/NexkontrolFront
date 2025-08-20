@@ -130,7 +130,10 @@ class ApiService {
   }
 
   async chatWithAI(request: any): Promise<any> {
-    const response: AxiosResponse<any> = await this.api.post('/api/Analyze/ask-ia', request);
+    var dados = {
+      Pergunta: request
+    }
+    const response: AxiosResponse<any> = await this.api.post('/api/Analyze/ask-ia', dados);
     return response.data;
   }
 
