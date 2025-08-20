@@ -42,7 +42,7 @@ class AIService {
   }
 
   async chatWithAI(request: string): Promise<any> {
-    return this.makeRequest<string>('/api/Analyze/ask-ia', {
+    return this.makeRequest<string>('api/Analyze/ask-ia', {
       method: 'POST',
       body: JSON.stringify(request),
     });
