@@ -16,7 +16,7 @@ class AIService {
 
   private async makeRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const token = localStorage.getItem('token');
-    
+    debugger
     const response = await fetch(`${this.apiBaseUrl}${endpoint}`, {
       ...options,
       headers: {
@@ -42,7 +42,7 @@ class AIService {
   }
 
   async chatWithAI(request: string): Promise<any> {
-    return this.makeRequest<string>('api/Analyze/ask-ia', {
+    return this.makeRequest<string>('/api/Analyze/ask-ia', {
       method: 'POST',
       body: JSON.stringify(request),
     });
