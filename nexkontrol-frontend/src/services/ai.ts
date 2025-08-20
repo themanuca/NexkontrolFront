@@ -35,14 +35,14 @@ class AIService {
   }
 
   async analyzeTransactions(request: string): Promise<string> {
-    return this.makeRequest<string>('/api/Analyze/ask-ia', {
+    return this.makeRequest<string>('api/Analyze/ask-ia', {
       method: 'POST',
       body: JSON.stringify(request),
     });
   }
 
   async chatWithAI(request: string): Promise<any> {
-    return this.makeRequest<string>('/api/Analyze/ask-ia', {
+    return this.makeRequest<string>('api/Analyze/ask-ia', {
       method: 'POST',
       body: JSON.stringify(request),
     });
