@@ -1,5 +1,4 @@
 import { useState, useCallback, useMemo } from 'react';
-import { aiService } from '../services/ai';
 import { apiService } from '../services/api';
 import type { 
   AIAnalysis, 
