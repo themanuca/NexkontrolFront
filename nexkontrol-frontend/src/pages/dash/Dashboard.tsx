@@ -103,7 +103,6 @@ export default function Dashboard() {
 
   // Handlers de IA
   const handleAIAnalysis = async () => {
-    debugger
     if (filteredTransactions.length > 0) {
       await analyzeTransactions(filteredTransactions, {
         dateRange: {

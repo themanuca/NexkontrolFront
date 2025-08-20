@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { aiService } from '../services/ai';
+import { apiService } from '../services/api';
 import type { 
   AIAnalysis, 
   AIInsight, 
@@ -80,9 +81,7 @@ export function useAI() {
     if (!isAIEnabled || message.length == 0) {
       return;
     }
-    const aiAnalysis = await aiService.chatWithAI(message);
-    console.log(aiAnalysis);
-    debugger
+    const aiAnalysis = await apiService.chatWithAI(message);
     setChatMessages(aiAnalysis.resposta);
 
   }, [isAIEnabled]);
